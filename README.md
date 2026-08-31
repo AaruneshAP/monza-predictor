@@ -23,8 +23,8 @@ cd model && pip install -r requirements.txt && python generate_predictions.py
 cd ../frontend && npm install && npm run dev
 ```
 
-See `CLAUDE.md` for the full project brief and `DEPLOYMENT.md` for deploy
-steps.
+See `PROJECT_BRIEF.md` for the full project brief and `DEPLOYMENT.md` for
+deploy steps.
 
 ## Data-availability handling
 

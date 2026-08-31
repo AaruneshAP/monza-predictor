@@ -4,7 +4,7 @@ Monza GP — Monte Carlo Win Probability Model
 Built on real FastF1 data, re-weighted for Monza's low-downforce,
 high-top-speed, slipstream-heavy characteristics.
 
-Data-availability note (see CLAUDE.md): as of the date this is run, Monza
+Data-availability note (see PROJECT_BRIEF.md): as of the date this is run, Monza
 race weekend hasn't happened yet, so there's no live qualifying/FP2 session
 for Monza itself. The model falls back to two real-data sources instead:
   1. Historical Monza results (2019-2025) per driver, as a track-specific
