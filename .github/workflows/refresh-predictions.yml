@@ -1,0 +1,32 @@
+name: Refresh predictions
+
+on:
+  schedule:
+    # Runs daily at 06:00 UTC during race weekends — adjust as needed
+    - cron: "0 6 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install -r model/requirements.txt
+
+      - name: Run model
+        working-directory: model
+        run: python generate_predictions.py
+
+      - name: Commit updated predictions
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add frontend/public/predictions.json
+          git diff --staged --quiet || git commit -m "Refresh Monza predictions"
+          git push
