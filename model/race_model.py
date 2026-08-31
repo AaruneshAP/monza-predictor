@@ -1,27 +1,32 @@
 """
-Monza GP — Monte Carlo Win Probability Model
-=============================================
-Built on real FastF1 data, re-weighted for Monza's low-downforce,
-high-top-speed, slipstream-heavy characteristics.
+F1 Race Predictor — Monte Carlo Win Probability Model
+======================================================
+Generalized from a Monza-only model into one that can predict any round of
+the season, re-weighted per circuit via circuit_profiles.py (downforce
+level, overtaking difficulty, tire severity) instead of hardcoding one
+track's numbers everywhere.
 
-Data-availability note (see PROJECT_BRIEF.md): as of the date this is run, Monza
-race weekend hasn't happened yet, so there's no live qualifying/FP2 session
-for Monza itself. The model falls back to two real-data sources instead:
-  1. Historical Monza results (2019-2025) per driver, as a track-specific
-     baseline.
+Data-availability handling: for a race that hasn't happened yet, there's
+no live qualifying/FP2 session for it. FastF1 doesn't error on a session
+that hasn't run — it silently returns empty data — so load_race_context()
+detects that and falls back to two real-data sources instead:
+  1. Historical results at this circuit, 2019-2025 (or fewer years, or
+     none, for a new circuit — see circuit_profiles.py's `historical_key`).
   2. Current-season form (quali pace, top speed, tire degradation, pit
-     performance) from the most recent completed races, as a proxy for
-     "how fast is this car right now."
+     performance, championship standings) from the most recent completed
+     rounds, as a proxy for "how fast is this car right now."
 
-This fallback is not hardcoded as the only path: load_monza_context()
-*first* tries to pull this weekend's actual Monza 'Q' and 'FP2' sessions
-from FastF1. FastF1 doesn't error on a session that hasn't run yet — it
-just returns empty data — so we detect that and fall back automatically.
-Once qualifying/FP2 actually go green later in race week, simply re-running
+Once qualifying/FP2 actually run for that round, simply re-running
 `python generate_predictions.py` picks up the real grid, real top speed,
-and real tire-degradation data with no code changes. Check the printed
+and real tire-degradation data with no code changes — check the printed
 "Grid source" / "Tire degradation source" lines to see which path a given
 run used.
+
+Backtesting: pass backtest=True to load_race_context() to generate a
+*blind* pre-race prediction for a round that's already happened, using
+only data available before it (no live quali/FP2 for that round, no
+season-form rounds at or after it). This is what makes the "predicted vs
+actual" track record honest — it's not hindsight-informed.
 """
 
 import warnings
@@ -31,58 +36,102 @@ import fastf1
 import numpy as np
 import pandas as pd
 
+from circuit_profiles import get_profile
+
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 SEASON_YEAR = 2026
-MONZA_EVENT = "Italian Grand Prix"
-
-# Manual grid correction for known lineup changes FastF1 can't reflect yet —
-# a session that hasn't happened has no session data to read a roster from,
-# so `_load_current_grid()`'s "most recent completed race" heuristic breaks
-# for a one-off substitution that reverts before the next round.
-#
-# Confirmed by user, 2026-08-31: Lawson's Red Bull seat at round 12 (Dutch
-# GP) was a one-race substitution for Hadjar (round 12 data: Red Bull =
-# VER+LAW, Racing Bulls = TSU+LIN; rounds 9-11: Red Bull = VER+HAD, Racing
-# Bulls = LAW+LIN — confirms the swap). For Monza, Hadjar returns to Red
-# Bull and Lawson moves back to Racing Bulls, bumping Tsunoda off the grid.
-# Update or clear this dict once it's stale (e.g. after Monza actually runs
-# and `live_quali`/`live_tire_deg` start driving the grid instead).
-MONZA_GRID_TEAM_OVERRIDE = {
-    "HAD": "Red Bull Racing",
-    "LAW": "Racing Bulls",
-}
-MONZA_GRID_DROP = {"TSU"}
 HISTORICAL_YEARS = range(2019, 2026)  # 2019-2025 inclusive
 RECENT_ROUNDS_FOR_FORM = 8  # how many of the season's completed rounds to use for "current form"
+
+# Manual grid corrections for known lineup changes FastF1 can't reflect yet
+# — a session that hasn't happened has no roster to read, so a substitution
+# that's already reverting before the *next* round has to be corrected by
+# hand rather than inferred from data. Keyed by round number; add an entry
+# only when you know of a specific correction needed for that race.
+#
+# Round 13 (Italian GP) confirmed by user, 2026-08-31: Lawson's Red Bull
+# seat at round 12 (Dutch GP) was a one-race substitution for Hadjar
+# (round 12 data: Red Bull = VER+LAW, Racing Bulls = TSU+LIN; rounds 9-11:
+# Red Bull = VER+HAD, Racing Bulls = LAW+LIN — confirms the swap). For
+# Monza, Hadjar returns to Red Bull and Lawson moves back to Racing Bulls,
+# bumping Tsunoda off the grid. Stale once live_quali starts driving the
+# grid for that round instead — safe to delete after round 13 runs.
+GRID_OVERRIDE_BY_ROUND = {
+    13: {
+        "team_overrides": {"HAD": "Red Bull Racing", "LAW": "Racing Bulls"},
+        "drop": {"TSU"},
+    },
+}
 
 # ---------------------------------------------------------------
 # 1. DATA LOADING
 # ---------------------------------------------------------------
 
 
-def _completed_rounds(season: int) -> list[int]:
-    """Round numbers for `season` whose race date has already passed,
-    excluding pre-season testing (round 0)."""
+def _completed_rounds(season: int, strictly_before_round: int | None = None) -> list[int]:
+    """Round numbers for `season` that count as "already happened".
+
+    Live mode (strictly_before_round=None): rounds whose date has passed,
+    per the real calendar.
+
+    Backtest mode (strictly_before_round=N): every round number < N,
+    regardless of today's date — this is what makes a backtest a fair
+    blind prediction using only what would have been known before round N.
+    """
     schedule = fastf1.get_event_schedule(season)
-    now = pd.Timestamp.now(tz="UTC")
-    completed = schedule[
-        (schedule["RoundNumber"] > 0) & (schedule["EventDate"] < now.tz_localize(None))
-    ]
-    return sorted(completed["RoundNumber"].tolist())
+    rounds = schedule[schedule["RoundNumber"] > 0]
+    if strictly_before_round is not None:
+        rounds = rounds[rounds["RoundNumber"] < strictly_before_round]
+    else:
+        now = pd.Timestamp.now(tz="UTC")
+        rounds = rounds[rounds["EventDate"] < now.tz_localize(None)]
+    return sorted(rounds["RoundNumber"].tolist())
 
 
-def _load_historical_monza() -> pd.DataFrame:
-    """Finishing position at Monza per driver for each year in
-    HISTORICAL_YEARS. DNFs/non-classified drivers are scored as
-    finishing one place behind the last classified driver that race."""
+def _get_verified_session(year: int, historical_key: str, session_type: str):
+    """fastf1.get_session() fuzzy-matches its event-name argument and does
+    NOT error when a circuit wasn't on that year's calendar — it silently
+    substitutes the closest-scoring name instead (confirmed: requesting
+    "Dutch Grand Prix" for 2019/2020, before Zandvoort returned to the
+    calendar, silently resolved to the Chinese and Russian Grands Prix).
+    Ingesting that as "historical Dutch GP data" would silently corrupt
+    the feature. Loads the session and verifies session.event['EventName']
+    actually matches before returning it; returns None otherwise.
+    """
+    try:
+        session = fastf1.get_session(year, historical_key, session_type)
+        session.load(laps=False, telemetry=False, weather=False, messages=False)
+    except Exception as exc:
+        print(f"  [historical] skipping {year} {historical_key}: {exc}")
+        return None
+    resolved_name = session.event["EventName"]
+    if resolved_name != historical_key:
+        print(
+            f"  [historical] skipping {year}: '{historical_key}' doesn't match "
+            f"this calendar (fastf1 resolved it to '{resolved_name}' instead — "
+            f"the circuit likely wasn't racing that year)"
+        )
+        return None
+    return session
+
+
+def _load_historical_circuit(historical_key: str | None) -> pd.DataFrame:
+    """Finishing position per driver for each year in HISTORICAL_YEARS at
+    this circuit. historical_key=None (brand-new circuit) short-circuits
+    to an empty frame — build_features() imputes a sensible default for
+    that case rather than treating it as an error.
+
+    DNFs/non-classified drivers are scored as finishing one place behind
+    the last classified driver that race.
+    """
+    if historical_key is None:
+        return pd.DataFrame(columns=["year", "driver", "team", "finish_pos"])
+
     rows = []
     for year in HISTORICAL_YEARS:
-        try:
-            session = fastf1.get_session(year, "Monza", "R")
-            session.load(laps=False, telemetry=False, weather=False, messages=False)
-        except Exception as exc:  # a given year's data can be flaky/unavailable
-            print(f"  [historical] skipping {year} Monza: {exc}")
+        session = _get_verified_session(year, historical_key, "R")
+        if session is None:
             continue
 
         results = session.results.copy()
@@ -103,7 +152,7 @@ def _load_historical_monza() -> pd.DataFrame:
 
 
 def _load_season_form(rounds: list[int]) -> dict:
-    """Pulls qualifying + race data for the given 2026 rounds and returns
+    """Pulls qualifying + race data for the given rounds and returns
     per-driver aggregates: quali position, top speed, tire degradation
     slope, and pit-stop time loss."""
     quali_rows, race_rows = [], []
@@ -196,8 +245,8 @@ def _load_season_points(latest_round: int) -> pd.DataFrame:
     round. This is a much more robust "how competitive is this car right
     now" signal than small-sample per-round proxies like an 8-round
     tire-degradation slope — it's the season's own full aggregate, and it's
-    what actually separates a struggling-but-still-solid 6th-in-standings
-    car from a genuine backmarker, which single-race proxies can miss."""
+    what actually separates a struggling-but-still-solid mid-table car
+    from a genuine backmarker, which single-race proxies can miss."""
     standings = fastf1.ergast.Ergast().get_driver_standings(
         season=SEASON_YEAR, round=latest_round
     )
@@ -221,12 +270,12 @@ def _find_driver_full_name(driver: str, before_round: int, lookback: int = 6) ->
     return driver
 
 
-def _load_current_grid(latest_round: int) -> pd.DataFrame:
+def _load_current_grid(latest_round: int, round_number: int) -> pd.DataFrame:
     """Driver/team lineup from the most recent completed race — this is
     "who's actually racing" for mid-season driver swaps and rookies.
 
     This heuristic breaks for a substitution that's already reverting by
-    the *next* round (see MONZA_GRID_TEAM_OVERRIDE) — a session that hasn't
+    the *next* round (see GRID_OVERRIDE_BY_ROUND) — a session that hasn't
     happened yet has no roster to read, so that has to be corrected
     manually rather than inferred from data.
     """
@@ -239,8 +288,12 @@ def _load_current_grid(latest_round: int) -> pd.DataFrame:
         columns={"Abbreviation": "driver", "FullName": "full_name", "TeamName": "team"}
     )
 
-    grid = grid[~grid["driver"].isin(MONZA_GRID_DROP)]
-    for driver, team in MONZA_GRID_TEAM_OVERRIDE.items():
+    override = GRID_OVERRIDE_BY_ROUND.get(round_number, {})
+    drop = override.get("drop", set())
+    team_overrides = override.get("team_overrides", {})
+
+    grid = grid[~grid["driver"].isin(drop)]
+    for driver, team in team_overrides.items():
         if driver in grid["driver"].values:
             grid.loc[grid["driver"] == driver, "team"] = team
         else:
@@ -252,8 +305,9 @@ def _load_current_grid(latest_round: int) -> pd.DataFrame:
     return grid.reset_index(drop=True)
 
 
-def _load_live_monza_session(session_type: str):
-    """Attempts to load this year's actual Monza session (e.g. 'Q', 'FP2').
+def _load_live_session(event_name: str, session_type: str):
+    """Attempts to load this year's actual session (e.g. 'Q', 'FP2') for
+    the given event.
 
     FastF1 does not raise when a session hasn't happened yet — it silently
     returns empty results/laps tables — so "not available" is detected by
@@ -262,7 +316,7 @@ def _load_live_monza_session(session_type: str):
     later re-run during race week upgrade to live data automatically.
     """
     try:
-        session = fastf1.get_session(SEASON_YEAR, MONZA_EVENT, session_type)
+        session = fastf1.get_session(SEASON_YEAR, event_name, session_type)
         session.load(laps=True, telemetry=False, weather=False, messages=False)
     except Exception as exc:
         print(f"  [live weekend] {session_type} not available yet: {exc}")
@@ -274,7 +328,7 @@ def _load_live_monza_session(session_type: str):
 
 
 def _live_quali_features(session) -> pd.DataFrame:
-    """Real Monza grid position + quali-lap top speed, once quali has run."""
+    """Real grid position + quali-lap top speed, once quali has run."""
     df = session.results[["Abbreviation", "Position"]].rename(
         columns={"Abbreviation": "driver", "Position": "grid_pos"}
     )
@@ -287,9 +341,9 @@ def _live_quali_features(session) -> pd.DataFrame:
 
 
 def _live_practice_tire_deg(session) -> pd.Series:
-    """Lap-time-vs-tyre-life slope from actual Monza FP2 long runs, per
-    driver — a much more relevant degradation signal than season-average
-    once it's available, since it's this track's tarmac/temps."""
+    """Lap-time-vs-tyre-life slope from actual FP2 long runs, per driver —
+    a much more relevant degradation signal than season-average once it's
+    available, since it's this track's own tarmac/temps."""
     laps = session.laps.copy()
     laps["LapSeconds"] = laps["LapTime"].dt.total_seconds()
     clean = laps[
@@ -312,12 +366,17 @@ def _live_practice_tire_deg(session) -> pd.Series:
     return pd.DataFrame(rows).groupby("driver")["slope"].mean()
 
 
-def _historical_rain_probability() -> float:
-    """Fraction of the historical Monza races run with any rainfall."""
+def _historical_rain_probability(historical_key: str | None) -> float:
+    """Fraction of the historical races at this circuit run with any
+    rainfall. Falls back to a generic 10% for a circuit with no history."""
+    if historical_key is None:
+        return 0.10
     wet_count, total = 0, 0
     for year in HISTORICAL_YEARS:
         try:
-            session = fastf1.get_session(year, "Monza", "R")
+            session = fastf1.get_session(year, historical_key, "R")
+            if session.event["EventName"] != historical_key:
+                continue  # fastf1 fuzzy-matched to a different race — see _get_verified_session
             session.load(laps=False, telemetry=False, weather=True, messages=False)
             total += 1
             if session.weather_data is not None and session.weather_data["Rainfall"].any():
@@ -327,24 +386,38 @@ def _historical_rain_probability() -> float:
     return round(wet_count / total, 2) if total else 0.10
 
 
-def load_monza_context(cache_dir: str = "./fastf1_cache") -> dict:
-    """Pulls historical Monza results + current-season form via FastF1.
-    Returns a dict of raw DataFrames consumed by build_features()."""
-    fastf1.Cache.enable_cache(cache_dir)
+def load_race_context(round_number: int, cache_dir: str = "./fastf1_cache", backtest: bool = False) -> dict:
+    """Pulls historical + current-season context for `round_number` via
+    FastF1. Returns a dict of raw DataFrames consumed by build_features().
 
-    print("Loading current-season schedule...")
-    completed = _completed_rounds(SEASON_YEAR)
+    backtest=True generates a *blind* prediction as if run before that
+    round happened: season-form/points/grid are computed using only
+    rounds strictly before it, and live quali/FP2 for that round are
+    never consulted (even if they exist, since the round already
+    happened) — this is what keeps a "predicted vs actual" comparison
+    honest rather than hindsight-informed.
+    """
+    fastf1.Cache.enable_cache(cache_dir)
+    profile = get_profile(round_number)
+    event_name = profile["event_name"]
+
+    print(f"Loading current-season schedule (round {round_number}: {event_name})...")
+    cutoff = round_number if backtest else None
+    completed = _completed_rounds(SEASON_YEAR, strictly_before_round=cutoff)
     if not completed:
-        raise RuntimeError(f"No completed {SEASON_YEAR} rounds found before Monza.")
+        raise RuntimeError(
+            f"No completed {SEASON_YEAR} rounds found before round {round_number} — "
+            f"can't build season-form features for a season opener this way."
+        )
     form_rounds = completed[-RECENT_ROUNDS_FOR_FORM:]
     latest_round = completed[-1]
     print(f"  Using rounds {form_rounds} of {SEASON_YEAR} as current-form window.")
 
-    print("Loading historical Monza results (2019-2025)...")
-    historical = _load_historical_monza()
+    print(f"Loading historical {event_name} results (2019-2025)...")
+    historical = _load_historical_circuit(profile["historical_key"])
 
     print("Loading current grid lineup...")
-    grid = _load_current_grid(latest_round)
+    grid = _load_current_grid(latest_round, round_number)
 
     print("Loading championship standings (season-form signal)...")
     season_points = _load_season_points(latest_round)
@@ -352,28 +425,35 @@ def load_monza_context(cache_dir: str = "./fastf1_cache") -> dict:
     print(f"Loading season form for rounds {form_rounds}...")
     season = _load_season_form(form_rounds)
 
-    print("Checking for live Monza-weekend session data (Q/FP2)...")
-    live_quali_session = _load_live_monza_session("Q")
-    live_quali = _live_quali_features(live_quali_session) if live_quali_session is not None else None
+    if backtest:
+        print("  Backtest mode: skipping live quali/FP2 (blind pre-race prediction).")
+        live_quali, live_tire_deg = None, None
+    else:
+        print(f"Checking for live {event_name} session data (Q/FP2)...")
+        live_quali_session = _load_live_session(event_name, "Q")
+        live_quali = _live_quali_features(live_quali_session) if live_quali_session is not None else None
 
-    live_practice_session = _load_live_monza_session("FP2")
-    live_tire_deg = (
-        _live_practice_tire_deg(live_practice_session)
-        if live_practice_session is not None
-        else None
-    )
-    if live_tire_deg is not None and live_tire_deg.empty:
-        live_tire_deg = None
+        live_practice_session = _load_live_session(event_name, "FP2")
+        live_tire_deg = (
+            _live_practice_tire_deg(live_practice_session)
+            if live_practice_session is not None
+            else None
+        )
+        if live_tire_deg is not None and live_tire_deg.empty:
+            live_tire_deg = None
 
-    grid_source = "live_monza_qualifying" if live_quali is not None else "season_form_projection"
-    tire_deg_source = "live_monza_fp2" if live_tire_deg is not None else "season_form"
+    grid_source = "live_qualifying" if live_quali is not None else "season_form_projection"
+    tire_deg_source = "live_fp2" if live_tire_deg is not None else "season_form"
     print(f"  Grid source: {grid_source}")
     print(f"  Tire degradation source: {tire_deg_source}")
 
-    print("Estimating rain probability from Monza weather history...")
-    rain_probability = _historical_rain_probability()
+    print(f"Estimating rain probability from {event_name} weather history...")
+    rain_probability = _historical_rain_probability(profile["historical_key"])
 
     return {
+        "round_number": round_number,
+        "event_name": event_name,
+        "profile": profile,
         "historical": historical,
         "grid": grid,
         "season_points": season_points,
@@ -390,7 +470,7 @@ def load_monza_context(cache_dir: str = "./fastf1_cache") -> dict:
 
 
 # ---------------------------------------------------------------
-# 2. FEATURE ENGINEERING (Monza-specific weighting)
+# 2. FEATURE ENGINEERING
 # ---------------------------------------------------------------
 
 
@@ -420,35 +500,36 @@ def build_features(raw: dict) -> pd.DataFrame:
     """
     Builds one row per current-grid driver:
       driver, team, grid_pos, quali_pace_pctile, top_speed_rank,
-      season_points_pctile, historical_monza_avg_finish, tire_deg_factor,
+      season_points_pctile, historical_avg_finish, tire_deg_factor,
       pit_delta, slipstream_factor
 
-    Monza-specific weighting choices (applied later in monte_carlo_simulate,
-    documented here for context):
-    - grid_pos: weighted DOWN — Monza overtaking is comparatively easy,
-      especially into Turn 1 (Rettifilo) and Roggia/Ascari on lap 1, and
-      down the two long straights all race. Uses the real Monza grid once
-      qualifying has actually run (raw["live_quali"]); until then it's
-      projected from season-average qualifying rank.
-    - top_speed_rank: weighted UP — low-drag setups and strong straight-
-      line speed (engine mode, DRS efficiency) matter disproportionately.
+    The per-circuit weighting these feed into (grid_pos down/up, top_speed
+    up/down, tire_deg up/down, slipstream variance) is applied in
+    monte_carlo_simulate() based on raw["profile"] — see
+    circuit_profiles.py and weight_profile_for() below for how.
+
+    - grid_pos: uses the real grid once qualifying has actually run
+      (raw["live_quali"]); until then it's projected from season-average
+      qualifying rank.
+    - top_speed_rank: from quali-lap speed-trap data (live if available,
+      else season-average).
     - season_points_pctile: cumulative championship points through the
       most recent round. This exists because single-race proxies (an
       8-round tire-degradation slope, a handful of quali top-speed traps)
       are noisy enough to rank a car with a genuinely strong, consistent
       season below one that's merely had a couple of clean weekends —
       points are the season's own aggregate and correct for that.
-    - tire_deg_factor: weighted DOWN (both because Monza is low-severity on
-      tires, and because the underlying signal is genuinely noisy — the
-      slope estimates are often ~0.01-0.05s/lap on a couple dozen stints,
-      not corrected for the fuel-burn effect that dominates that range, so
-      small real differences get inflated into large percentile swings).
-      Derived from each driver's lap-time-vs-tyre-life slope across their
-      recent stints.
-    - slipstream_factor: Monza-unique — midpack cars running similar pace
-      get bunched into slipstream trains and see more shuffling than at
-      most circuits; front-runners and backmarkers see less. Approximated
-      from how close a driver's season quali pace sits to the field median.
+    - tire_deg_factor: kept a small weight everywhere the underlying
+      signal is noisy — the slope estimates are often ~0.01-0.05s/lap on a
+      couple dozen stints, not corrected for the fuel-burn effect that
+      dominates that range, so small real differences get inflated into
+      large percentile swings. Derived from each driver's
+      lap-time-vs-tyre-life slope across their recent stints.
+    - slipstream_factor: midpack cars running similar pace get bunched
+      into slipstream trains and see more shuffling than at circuits where
+      cars run more spread out; front-runners and backmarkers see less.
+      Approximated from how close a driver's season quali pace sits to the
+      field median.
     """
     grid = raw["grid"]
     quali = raw["quali"]
@@ -468,7 +549,7 @@ def build_features(raw: dict) -> pd.DataFrame:
     )
 
     if live_quali is not None:
-        # Real Monza quali has happened — use it for grid + top speed.
+        # Real quali has happened — use it for grid + top speed.
         feat = feat.merge(
             live_quali.rename(columns={"top_speed": "live_top_speed"}),
             on="driver",
@@ -482,7 +563,7 @@ def build_features(raw: dict) -> pd.DataFrame:
             feat["live_top_speed"].fillna(feat["avg_top_speed"]), ascending=True
         )
     else:
-        # No live Monza quali yet — project from season-average pace instead.
+        # No live quali yet — project from season-average pace instead.
         feat["quali_pace_pctile"] = _pctile(feat["avg_quali_pos"], ascending=False)
         feat["top_speed_rank"] = _pctile(feat["avg_top_speed"], ascending=True)
         feat = feat.sort_values("avg_quali_pos", na_position="last").reset_index(drop=True)
@@ -493,15 +574,13 @@ def build_features(raw: dict) -> pd.DataFrame:
     feat["season_points_pctile"] = _pctile(feat["driver"].map(points_by_driver), ascending=True)
     feat["season_points_pctile"] = feat["season_points_pctile"].fillna(0.0)
 
-    # --- historical Monza finish, per driver, imputed for drivers with no history ---
+    # --- historical finish at this circuit, per driver, imputed for drivers with no history ---
     hist_avg = historical.groupby("driver")["finish_pos"].mean()
     default_finish = hist_avg.mean() if len(hist_avg) else feat["grid_pos"].median()
-    feat["historical_monza_avg_finish"] = (
-        feat["driver"].map(hist_avg).fillna(default_finish)
-    )
+    feat["historical_avg_finish"] = feat["driver"].map(hist_avg).fillna(default_finish)
 
     # --- tire degradation factor (0 = best/least degradation, 1 = worst) ---
-    # Prefer real Monza FP2 long-run data once it exists; season-average
+    # Prefer real FP2 long-run data once it exists; season-average
     # degradation from other tracks is a weaker proxy but the only option
     # before that.
     deg_avg = live_tire_deg if live_tire_deg is not None else tire_deg.groupby("driver")["slope"].mean()
@@ -526,7 +605,7 @@ def build_features(raw: dict) -> pd.DataFrame:
             "quali_pace_pctile",
             "top_speed_rank",
             "season_points_pctile",
-            "historical_monza_avg_finish",
+            "historical_avg_finish",
             "tire_deg_factor",
             "pit_delta",
             "slipstream_factor",
@@ -539,8 +618,40 @@ def build_features(raw: dict) -> pd.DataFrame:
 # ---------------------------------------------------------------
 
 
+def weight_profile_for(profile: dict) -> dict:
+    """Translates a circuit's 0-1 profile scores into concrete Monte Carlo
+    weights. Anchored so that plugging in Monza's own profile
+    (overtaking=0.15, downforce=0.05, tire=0.15) reproduces close to the
+    weights that were hand-tuned specifically for Monza in the original
+    single-track version of this model — i.e. this generalization isn't
+    an untested guess, it's checked to collapse back to known-reasonable
+    numbers at the one circuit this project already validated by hand.
+    """
+    overtaking = profile["overtaking_difficulty"]
+    downforce = profile["downforce_level"]
+    tire = profile["tire_severity"]
+
+    grid_weight = 0.05 + overtaking * 0.25  # 0.0875 at Monza, up to 0.30 at Monaco
+    top_speed_weight_dry = 0.05 + (1 - downforce) * 0.20  # 0.24 at Monza, down to 0.06 at Monaco
+    tire_deg_weight = 0.02 + tire * 0.12  # 0.038 at Monza, up to ~0.12 at Qatar
+    slipstream_coefficient = 0.01 + (1 - downforce) * 0.03  # 0.0385 at Monza
+
+    return {
+        "quali_weight": 0.25,
+        "points_weight": 0.26,
+        "grid_weight": grid_weight,
+        "top_speed_weight_dry": top_speed_weight_dry,
+        "top_speed_weight_wet": top_speed_weight_dry * 0.25,
+        "tire_deg_weight": tire_deg_weight,
+        "historical_weight": 0.10,
+        "pit_weight": 0.05,
+        "slipstream_coefficient": slipstream_coefficient,
+    }
+
+
 def monte_carlo_simulate(
     features: pd.DataFrame,
+    profile: dict,
     n_sims: int = 100_000,
     rain_probability: float = 0.10,
     random_seed: int = 42,
@@ -551,52 +662,45 @@ def monte_carlo_simulate(
          centered on their weighted feature score, with variance boosted
          by slipstream_factor (more randomness for closely-matched cars).
       2. Sample whether this simulation is a rain scenario using
-         rain_probability. If rain: down-weight top_speed_rank, up-weight
+         rain_probability. If rain: down-weight top_speed, up-weight
          randomness (proxy for reduced predictability in wet conditions).
       3. Rank drivers by simulated pace.
       4. Record finishing position for this simulation.
 
     Aggregates to win_pct, podium_pct (top 3), points_pct (top 10),
     expected_position (mean finish across sims).
+
+    Weight constants (see weight_profile_for) were tuned so a clear form
+    leader lands in a believable ~25-35% win range rather than 80%+ — an
+    earlier version of this model, weighted more naively, had a season
+    leader winning 82% of simulations, which isn't credible for a sport
+    with real race-day variance. The slipstream/variance term is
+    deliberately kept small relative to the skill-based terms — a larger
+    version of it let a midpack car's higher variance let it out-win a
+    genuinely stronger driver in simulated win%, purely from having fatter
+    tails, which inverted the field's real order.
     """
+    w = weight_profile_for(profile)
     rng = np.random.default_rng(random_seed)
     driver_team = dict(zip(features["driver"], features["team"]))
     results = {row.driver: [] for row in features.itertuples()}
 
     for _ in range(n_sims):
         is_rain = rng.random() < rain_probability
+        top_speed_weight = w["top_speed_weight_wet"] if is_rain else w["top_speed_weight_dry"]
         sim_scores = {}
 
         for row in features.itertuples():
             base_score = (
-                row.quali_pace_pctile * 0.25
-                + row.season_points_pctile * 0.26  # robust full-season form, see build_features
-                + (1 / max(row.grid_pos, 1)) * 0.10  # de-weighted vs other tracks
-                + row.top_speed_rank * (0.05 if is_rain else 0.20)
-                # Kept intentionally small: the underlying slope estimates are
-                # tiny (often ~0.01-0.05s/lap on ~20 stints) and not corrected
-                # for fuel-burn effect, so this percentile is noisier than its
-                # 0-1 spread suggests — see build_features' tire_deg_factor note.
-                + (1 - row.tire_deg_factor) * 0.04
-                + (1 - row.historical_monza_avg_finish / 20) * 0.10
-                - row.pit_delta * 0.05
+                row.quali_pace_pctile * w["quali_weight"]
+                + row.season_points_pctile * w["points_weight"]
+                + (1 / max(row.grid_pos, 1)) * w["grid_weight"]
+                + row.top_speed_rank * top_speed_weight
+                + (1 - row.tire_deg_factor) * w["tire_deg_weight"]
+                + (1 - row.historical_avg_finish / 20) * w["historical_weight"]
+                - row.pit_delta * w["pit_weight"]
             )
-            # Race-day noise has to be large enough relative to the feature-
-            # score spread or the sim degenerates into picking the same
-            # "fastest car" nearly every time — unrealistic for a sport
-            # where even a dominant car rarely wins 80%+ of starts. The base
-            # 0.18 was tuned so a clear form leader lands in a believable
-            # ~25-35% win range rather than 80%+.
-            #
-            # The slipstream term is intentionally small (0.03, not 0.10):
-            # a larger coefficient let the *variance* boost for midpack cars
-            # overpower actual skill differences — e.g. it was giving a
-            # midpack car with a clearly worse mean score (fewer points,
-            # worse quali pace) a higher win_pct than a genuinely stronger
-            # driver, purely because a wider distribution occasionally
-            # spikes to P1 more often. Keep this small enough that it can
-            # nudge close calls without inverting the field's real order.
-            noise_scale = 0.18 + row.slipstream_factor * 0.03
+            noise_scale = 0.18 + row.slipstream_factor * w["slipstream_coefficient"]
             if is_rain:
                 noise_scale *= 1.8  # wet races are less predictable
             sim_scores[row.driver] = base_score + rng.normal(0, noise_scale)
@@ -624,23 +728,28 @@ def monte_carlo_simulate(
 
 
 # ---------------------------------------------------------------
-# 4. MAIN
+# 4. MAIN (ad-hoc single-round run — see generate_predictions.py for the
+#    archive-aware version used by the site)
 # ---------------------------------------------------------------
 
 
-def main():
-    raw = load_monza_context()
+def main(round_number: int = 13, backtest: bool = False):
+    raw = load_race_context(round_number, backtest=backtest)
     features = build_features(raw)
     predictions = monte_carlo_simulate(
-        features, n_sims=100_000, rain_probability=raw["rain_probability"]
+        features, raw["profile"], n_sims=100_000, rain_probability=raw["rain_probability"]
     )
 
-    print(f"\nMONZA GP WEEKEND-AWARE PREDICTION — run at {datetime.now(timezone.utc).isoformat()}")
+    print(f"\n{raw['event_name'].upper()} PREDICTION — run at {datetime.now(timezone.utc).isoformat()}")
     print("Monte Carlo simulations: 100,000")
-    print(f"Rain scenario probability: {raw['rain_probability'] * 100:.0f}% (historical Monza rate 2019-2025)")
+    print(f"Rain scenario probability: {raw['rain_probability'] * 100:.0f}%")
     print(f"Grid source: {raw['grid_source']} | Tire degradation source: {raw['tire_deg_source']}\n")
     print(predictions.to_string(index=False))
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+
+    round_arg = int(sys.argv[1]) if len(sys.argv) > 1 else 13
+    backtest_arg = "--backtest" in sys.argv
+    main(round_arg, backtest=backtest_arg)

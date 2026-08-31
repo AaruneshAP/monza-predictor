@@ -1,14 +1,18 @@
 import "./globals.css";
+import Nav from "./components/Nav";
 
 export const metadata = {
-  title: "Monza GP Predictor",
-  description: "Monte Carlo win-probability model for the Italian Grand Prix",
+  title: "F1 Race Predictor",
+  description: "Monte Carlo win-probability model for every round of the season",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <Nav />
+        {children}
+      </body>
     </html>
   );
 }

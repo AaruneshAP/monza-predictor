@@ -1,0 +1,175 @@
+{
+  "season": 2026,
+  "updated_at": "2026-08-31T06:12:38.111841+00:00",
+  "races": [
+    {
+      "round": 1,
+      "slug": "2026-r01-australian-grand-prix",
+      "race_name": "Australian Grand Prix",
+      "race_date": "2026-03-08",
+      "status": "not_predicted"
+    },
+    {
+      "round": 2,
+      "slug": "2026-r02-chinese-grand-prix",
+      "race_name": "Chinese Grand Prix",
+      "race_date": "2026-03-15",
+      "status": "not_predicted"
+    },
+    {
+      "round": 3,
+      "slug": "2026-r03-japanese-grand-prix",
+      "race_name": "Japanese Grand Prix",
+      "race_date": "2026-03-29",
+      "status": "not_predicted"
+    },
+    {
+      "round": 4,
+      "slug": "2026-r04-miami-grand-prix",
+      "race_name": "Miami Grand Prix",
+      "race_date": "2026-05-03",
+      "status": "not_predicted"
+    },
+    {
+      "round": 5,
+      "slug": "2026-r05-canadian-grand-prix",
+      "race_name": "Canadian Grand Prix",
+      "race_date": "2026-05-24",
+      "status": "not_predicted"
+    },
+    {
+      "round": 6,
+      "slug": "2026-r06-monaco-grand-prix",
+      "race_name": "Monaco Grand Prix",
+      "race_date": "2026-06-07",
+      "status": "not_predicted"
+    },
+    {
+      "round": 7,
+      "slug": "2026-r07-barcelona-grand-prix",
+      "race_name": "Barcelona Grand Prix",
+      "race_date": "2026-06-14",
+      "status": "not_predicted"
+    },
+    {
+      "round": 8,
+      "slug": "2026-r08-austrian-grand-prix",
+      "race_name": "Austrian Grand Prix",
+      "race_date": "2026-06-28",
+      "status": "not_predicted"
+    },
+    {
+      "round": 9,
+      "slug": "2026-r09-british-grand-prix",
+      "race_name": "British Grand Prix",
+      "race_date": "2026-07-05",
+      "status": "not_predicted"
+    },
+    {
+      "round": 10,
+      "slug": "2026-r10-belgian-grand-prix",
+      "race_name": "Belgian Grand Prix",
+      "race_date": "2026-07-19",
+      "status": "completed"
+    },
+    {
+      "round": 11,
+      "slug": "2026-r11-hungarian-grand-prix",
+      "race_name": "Hungarian Grand Prix",
+      "race_date": "2026-07-26",
+      "status": "completed"
+    },
+    {
+      "round": 12,
+      "slug": "2026-r12-dutch-grand-prix",
+      "race_name": "Dutch Grand Prix",
+      "race_date": "2026-08-23",
+      "status": "completed"
+    },
+    {
+      "round": 13,
+      "slug": "2026-r13-italian-grand-prix",
+      "race_name": "Italian Grand Prix",
+      "race_date": "2026-09-06",
+      "status": "predicted"
+    },
+    {
+      "round": 14,
+      "slug": "2026-r14-spanish-grand-prix",
+      "race_name": "Spanish Grand Prix",
+      "race_date": "2026-09-13",
+      "status": "not_predicted"
+    },
+    {
+      "round": 15,
+      "slug": "2026-r15-azerbaijan-grand-prix",
+      "race_name": "Azerbaijan Grand Prix",
+      "race_date": "2026-09-26",
+      "status": "not_predicted"
+    },
+    {
+      "round": 16,
+      "slug": "2026-r16-bahrain-grand-prix",
+      "race_name": "Bahrain Grand Prix",
+      "race_date": "2026-10-04",
+      "status": "not_predicted"
+    },
+    {
+      "round": 17,
+      "slug": "2026-r17-singapore-grand-prix",
+      "race_name": "Singapore Grand Prix",
+      "race_date": "2026-10-11",
+      "status": "not_predicted"
+    },
+    {
+      "round": 18,
+      "slug": "2026-r18-united-states-grand-prix",
+      "race_name": "United States Grand Prix",
+      "race_date": "2026-10-25",
+      "status": "not_predicted"
+    },
+    {
+      "round": 19,
+      "slug": "2026-r19-mexico-city-grand-prix",
+      "race_name": "Mexico City Grand Prix",
+      "race_date": "2026-11-01",
+      "status": "not_predicted"
+    },
+    {
+      "round": 20,
+      "slug": "2026-r20-s-o-paulo-grand-prix",
+      "race_name": "S\u00e3o Paulo Grand Prix",
+      "race_date": "2026-11-08",
+      "status": "not_predicted"
+    },
+    {
+      "round": 21,
+      "slug": "2026-r21-las-vegas-grand-prix",
+      "race_name": "Las Vegas Grand Prix",
+      "race_date": "2026-11-21",
+      "status": "not_predicted"
+    },
+    {
+      "round": 22,
+      "slug": "2026-r22-qatar-grand-prix",
+      "race_name": "Qatar Grand Prix",
+      "race_date": "2026-11-29",
+      "status": "not_predicted"
+    },
+    {
+      "round": 23,
+      "slug": "2026-r23-abu-dhabi-grand-prix",
+      "race_name": "Abu Dhabi Grand Prix",
+      "race_date": "2026-12-06",
+      "status": "not_predicted"
+    }
+  ],
+  "next_race_slug": "2026-r13-italian-grand-prix",
+  "track_record": {
+    "races_scored": 3,
+    "winner_hit_rate_pct": 33.3,
+    "avg_brier_score_win": 0.0433,
+    "avg_mean_abs_position_error": 3.53,
+    "avg_podium_hits": 1.33
+  }
+}
