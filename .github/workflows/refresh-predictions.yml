@@ -2,10 +2,12 @@ name: Refresh predictions
 
 on:
   schedule:
-    # Runs daily at 06:00 UTC — cheap enough to run year-round; picks up
-    # live quali/FP2 automatically once a race weekend starts, and grades
-    # the previous race as soon as its result is available.
-    - cron: "0 6 * * *"
+    # Every 3 hours, year-round. should_run_full_refresh.py gates the
+    # actual work so this only does anything (FastF1 pulls, commits)
+    # within a few days of an actual race weekend — no need to hand-edit
+    # cron dates before every race to get tight same-day updates around
+    # FP2/quali/the race itself.
+    - cron: "0 */3 * * *"
   workflow_dispatch: {}
 
 jobs:
@@ -21,15 +23,23 @@ jobs:
       - name: Install deps
         run: pip install -r model/requirements.txt
 
+      - name: Check if we're near a race weekend
+        id: check
+        working-directory: model
+        run: python should_run_full_refresh.py
+
       - name: Predict the next upcoming race
+        if: steps.check.outputs.should_run == 'true'
         working-directory: model
         run: python generate_predictions.py
 
       - name: Grade any races that have since finished
+        if: steps.check.outputs.should_run == 'true'
         working-directory: model
         run: python check_results.py
 
       - name: Commit updated predictions
+        if: steps.check.outputs.should_run == 'true'
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
