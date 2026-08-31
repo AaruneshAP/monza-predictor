@@ -2,7 +2,9 @@ name: Refresh predictions
 
 on:
   schedule:
-    # Runs daily at 06:00 UTC during race weekends — adjust as needed
+    # Runs daily at 06:00 UTC — cheap enough to run year-round; picks up
+    # live quali/FP2 automatically once a race weekend starts, and grades
+    # the previous race as soon as its result is available.
     - cron: "0 6 * * *"
   workflow_dispatch: {}
 
@@ -19,14 +21,18 @@ jobs:
       - name: Install deps
         run: pip install -r model/requirements.txt
 
-      - name: Run model
+      - name: Predict the next upcoming race
         working-directory: model
         run: python generate_predictions.py
+
+      - name: Grade any races that have since finished
+        working-directory: model
+        run: python check_results.py
 
       - name: Commit updated predictions
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add frontend/public/predictions.json
-          git diff --staged --quiet || git commit -m "Refresh Monza predictions"
+          git add frontend/public/predictions/
+          git diff --staged --quiet || git commit -m "Refresh predictions"
           git push

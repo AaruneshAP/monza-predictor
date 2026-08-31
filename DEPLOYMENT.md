@@ -13,9 +13,11 @@ GitHub Actions, also free) and writes a static JSON file. The frontend is
    ```
    cd model
    pip install -r requirements.txt
-   python generate_predictions.py
+   python generate_predictions.py   # predicts the next upcoming race
+   python check_results.py          # grades any races that have since finished
    ```
-   This writes `frontend/public/predictions.json`.
+   This writes/updates `frontend/public/predictions/{slug}.json` and
+   `frontend/public/predictions/index.json`.
 
 2. **Push to GitHub** (a public repo also doubles as your portfolio piece —
    good README, clear commits).
@@ -27,8 +29,9 @@ GitHub Actions, also free) and writes a static JSON file. The frontend is
    - Deploy — no environment variables needed
 
 4. **(Optional) Auto-refresh predictions**: the included GitHub Action
-   (`.github/workflows/refresh-predictions.yml`) re-runs the model on a
-   schedule and commits the updated JSON. Vercel auto-redeploys on every
+   (`.github/workflows/refresh-predictions.yml`) predicts the next
+   upcoming race and grades any race that's finished since the last run,
+   daily, committing the updated archive. Vercel auto-redeploys on every
    push to main. Fully free, fully automated.
 
 ## Custom domain (optional, still free)
