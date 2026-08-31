@@ -134,7 +134,10 @@ export default function Home() {
 
       <footer className="text-neutral-600 text-xs pt-8 border-t border-neutral-800">
         Built with FastF1 data · source on{" "}
-        <a href="#" className="underline hover:text-accent">
+        <a
+          href="https://github.com/AaruneshAP/monza-predictor"
+          className="underline hover:text-accent"
+        >
           GitHub
         </a>
       </footer>
