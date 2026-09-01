@@ -21,6 +21,7 @@ WINDOW_AFTER_DAYS = 2   # keep polling through Tuesday, in case result grading l
 
 
 def should_run() -> bool:
+    os.makedirs("./fastf1_cache", exist_ok=True)
     fastf1.Cache.enable_cache("./fastf1_cache")
     schedule = fastf1.get_event_schedule(SEASON_YEAR)
     schedule = schedule[schedule["RoundNumber"] > 0]

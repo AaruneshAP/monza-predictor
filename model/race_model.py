@@ -29,6 +29,7 @@ season-form rounds at or after it). This is what makes the "predicted vs
 actual" track record honest — it's not hindsight-informed.
 """
 
+import os
 import warnings
 from datetime import datetime, timezone
 
@@ -397,6 +398,7 @@ def load_race_context(round_number: int, cache_dir: str = "./fastf1_cache", back
     happened) — this is what keeps a "predicted vs actual" comparison
     honest rather than hindsight-informed.
     """
+    os.makedirs(cache_dir, exist_ok=True)
     fastf1.Cache.enable_cache(cache_dir)
     profile = get_profile(round_number)
     event_name = profile["event_name"]

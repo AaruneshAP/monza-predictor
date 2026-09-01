@@ -14,6 +14,7 @@ Run this after generate_predictions.py in the scheduled workflow (see
 races have finished since the last run and leaves everything else alone.
 """
 
+import os
 from datetime import datetime, timezone
 
 import fastf1
@@ -95,6 +96,7 @@ def _score(predicted: list[dict], actual: list[dict]) -> dict:
 
 
 def main():
+    os.makedirs("./fastf1_cache", exist_ok=True)
     fastf1.Cache.enable_cache("./fastf1_cache")
     graded_any = False
 
