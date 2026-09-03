@@ -1,5 +1,8 @@
 name: Refresh predictions
 
+permissions:
+  contents: write
+
 on:
   schedule:
     # Every 3 hours, year-round. should_run_full_refresh.py gates the
