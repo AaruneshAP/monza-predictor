@@ -233,11 +233,16 @@ def _load_season_form(rounds: list[int]) -> dict:
         except Exception as exc:
             print(f"  [season form] skipping round {rnd} race: {exc}")
 
+    # Explicit columns even when a list is empty (every round in the window
+    # failed to load, e.g. an upstream FastF1/Ergast outage) — otherwise
+    # pd.DataFrame([]) has no columns at all, and build_features()'s
+    # .groupby("driver") calls crash with KeyError('driver') instead of
+    # degrading to NaN features for that source.
     return {
-        "quali": pd.DataFrame(quali_rows),
-        "race": pd.DataFrame(race_rows),
-        "tire_deg": pd.DataFrame(tire_deg_rows),
-        "pit_delta": pd.DataFrame(pit_delta_rows),
+        "quali": pd.DataFrame(quali_rows, columns=["round", "driver", "team", "quali_pos", "top_speed"]),
+        "race": pd.DataFrame(race_rows, columns=["round", "driver", "team", "finish_pos"]),
+        "tire_deg": pd.DataFrame(tire_deg_rows, columns=["driver", "slope"]),
+        "pit_delta": pd.DataFrame(pit_delta_rows, columns=["driver", "loss"]),
     }
 
 
