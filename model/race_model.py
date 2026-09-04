@@ -334,9 +334,17 @@ def _load_live_session(event_name: str, session_type: str):
 
 
 def _live_quali_features(session) -> pd.DataFrame:
-    """Real grid position + quali-lap top speed, once quali has run."""
-    df = session.results[["Abbreviation", "Position"]].rename(
-        columns={"Abbreviation": "driver", "Position": "grid_pos"}
+    """Real grid position + quali-lap top speed, once quali has run.
+
+    Also carries `team` straight from this session's own entry list —
+    ground truth for who's actually racing this weekend — so
+    build_features() can use it to add/correct entrants the pre-quali
+    projected grid (and any GRID_OVERRIDE_BY_ROUND guess) got wrong,
+    instead of being stuck with whatever driver set that projection
+    already committed to.
+    """
+    df = session.results[["Abbreviation", "Position", "TeamName"]].rename(
+        columns={"Abbreviation": "driver", "Position": "grid_pos", "TeamName": "team"}
     )
     try:
         top_speed = session.laps.groupby("Driver")["SpeedST"].max()
@@ -551,17 +559,28 @@ def build_features(raw: dict) -> pd.DataFrame:
     quali_avg = quali.groupby("driver")["quali_pos"].mean().rename("avg_quali_pos")
     top_speed_avg = quali.groupby("driver")["top_speed"].mean().rename("avg_top_speed")
 
-    feat = grid.merge(quali_avg, on="driver", how="left").merge(
-        top_speed_avg, on="driver", how="left"
-    )
-
     if live_quali is not None:
-        # Real quali has happened — use it for grid + top speed.
+        # Real quali has happened, so its entry list is ground truth for
+        # who's actually racing this weekend — build the driver set from
+        # it directly rather than left-merging onto `grid` (the pre-quali
+        # projection, possibly adjusted by a GRID_OVERRIDE_BY_ROUND guess
+        # about a substitution). Left-merging the other way silently drops
+        # anyone live_quali has that `grid` doesn't, and leaves anyone
+        # `grid` wrongly guessed sitting in the output with a fabricated
+        # last-place grid slot instead of being removed. Team comes from
+        # live_quali itself — this session's own entry list, so it's
+        # ground truth for team too, not just presence — falling back to
+        # `grid` only on the rare miss (e.g. a blank TeamName in results).
+        feat = live_quali.rename(columns={"top_speed": "live_top_speed"})
         feat = feat.merge(
-            live_quali.rename(columns={"top_speed": "live_top_speed"}),
-            on="driver",
-            how="left",
+            grid[["driver", "team"]].rename(columns={"team": "grid_team"}), on="driver", how="left"
         )
+        feat["team"] = feat["team"].fillna(feat["grid_team"])
+        feat = feat.drop(columns="grid_team")
+        feat = feat.merge(quali_avg, on="driver", how="left").merge(
+            top_speed_avg, on="driver", how="left"
+        )
+
         max_grid = feat["grid_pos"].max()
         fallback_grid = (max_grid if pd.notna(max_grid) else len(feat)) + 1
         feat["grid_pos"] = feat["grid_pos"].fillna(fallback_grid)
@@ -570,7 +589,13 @@ def build_features(raw: dict) -> pd.DataFrame:
             feat["live_top_speed"].fillna(feat["avg_top_speed"]), ascending=True
         )
     else:
-        # No live quali yet — project from season-average pace instead.
+        # No live quali yet — project from season-average pace instead,
+        # using the pre-quali grid (season rollover + any manual
+        # GRID_OVERRIDE_BY_ROUND correction) as the driver set, since
+        # there's no ground truth yet to reconcile it against.
+        feat = grid.merge(quali_avg, on="driver", how="left").merge(
+            top_speed_avg, on="driver", how="left"
+        )
         feat["quali_pace_pctile"] = _pctile(feat["avg_quali_pos"], ascending=False)
         feat["top_speed_rank"] = _pctile(feat["avg_top_speed"], ascending=True)
         feat = feat.sort_values("avg_quali_pos", na_position="last").reset_index(drop=True)
