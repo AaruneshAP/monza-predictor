@@ -49,21 +49,21 @@ RECENT_ROUNDS_FOR_FORM = 8  # how many of the season's completed rounds to use f
 # — a session that hasn't happened has no roster to read, so a substitution
 # that's already reverting before the *next* round has to be corrected by
 # hand rather than inferred from data. Keyed by round number; add an entry
-# only when you know of a specific correction needed for that race.
+# only once a correction for that specific race is actually confirmed —
+# this is still just the pre-quali projection; once live_quali exists for
+# that round, build_features() reconciles the grid (and team assignments)
+# against it directly regardless of what's written here (see
+# build_features()'s live_quali branch), so a wrong or stale entry can only
+# mislead a prediction shown before qualifying actually runs.
 #
-# Round 13 (Italian GP) confirmed by user, 2026-08-31: Lawson's Red Bull
-# seat at round 12 (Dutch GP) was a one-race substitution for Hadjar
-# (round 12 data: Red Bull = VER+LAW, Racing Bulls = TSU+LIN; rounds 9-11:
-# Red Bull = VER+HAD, Racing Bulls = LAW+LIN — confirms the swap). For
-# Monza, Hadjar returns to Red Bull and Lawson moves back to Racing Bulls,
-# bumping Tsunoda off the grid. Stale once live_quali starts driving the
-# grid for that round instead — safe to delete after round 13 runs.
-GRID_OVERRIDE_BY_ROUND = {
-    13: {
-        "team_overrides": {"HAD": "Red Bull Racing", "LAW": "Racing Bulls"},
-        "drop": {"TSU"},
-    },
-}
+# Round 13 (Italian GP): Lawson's Red Bull seat at round 12 (Dutch GP) was
+# a one-race substitution for Hadjar (round 12 data: Red Bull = VER+LAW,
+# Racing Bulls = TSU+LIN; rounds 9-11: Red Bull = VER+HAD, Racing Bulls =
+# LAW+LIN — confirms the swap), but whether Hadjar is actually back for
+# Monza is unconfirmed as of 2026-09-05 — no override entered here until
+# it is, so the pre-quali projection falls back to round 12's actual grid
+# (Lawson at Red Bull) rather than guessing.
+GRID_OVERRIDE_BY_ROUND = {}
 
 # ---------------------------------------------------------------
 # 1. DATA LOADING
