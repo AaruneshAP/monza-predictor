@@ -6,7 +6,7 @@
   "race_date": "2026-09-06",
   "generated_at": "2026-09-06T20:00:34.091919+00:00",
   "backtest": false,
-  "status": "predicted",
+  "status": "completed",
   "n_simulations": 100000,
   "rain_probability_pct": 0.0,
   "grid_source": "live_qualifying",
@@ -216,6 +216,129 @@
       "expected_position": 17.74
     }
   ],
-  "actual": null,
-  "accuracy": null
+  "actual": {
+    "classification": [
+      {
+        "driver": "ANT",
+        "team": "Mercedes",
+        "position": 1
+      },
+      {
+        "driver": "RUS",
+        "team": "Mercedes",
+        "position": 2
+      },
+      {
+        "driver": "VER",
+        "team": "Red Bull",
+        "position": 3
+      },
+      {
+        "driver": "NOR",
+        "team": "McLaren",
+        "position": 4
+      },
+      {
+        "driver": "PIA",
+        "team": "McLaren",
+        "position": 5
+      },
+      {
+        "driver": "HAM",
+        "team": "Ferrari",
+        "position": 6
+      },
+      {
+        "driver": "GAS",
+        "team": "Alpine F1 Team",
+        "position": 7
+      },
+      {
+        "driver": "LIN",
+        "team": "RB F1 Team",
+        "position": 8
+      },
+      {
+        "driver": "COL",
+        "team": "Alpine F1 Team",
+        "position": 9
+      },
+      {
+        "driver": "TSU",
+        "team": "RB F1 Team",
+        "position": 10
+      },
+      {
+        "driver": "BOR",
+        "team": "Audi",
+        "position": 11
+      },
+      {
+        "driver": "HUL",
+        "team": "Audi",
+        "position": 12
+      },
+      {
+        "driver": "SAI",
+        "team": "Williams",
+        "position": 13
+      },
+      {
+        "driver": "LAW",
+        "team": "Red Bull",
+        "position": 14
+      },
+      {
+        "driver": "BEA",
+        "team": "Haas F1 Team",
+        "position": 15
+      },
+      {
+        "driver": "OCO",
+        "team": "Haas F1 Team",
+        "position": 16
+      },
+      {
+        "driver": "ALB",
+        "team": "Williams",
+        "position": 17
+      },
+      {
+        "driver": "PER",
+        "team": "Cadillac F1 Team",
+        "position": 18
+      },
+      {
+        "driver": "BOT",
+        "team": "Cadillac F1 Team",
+        "position": 19
+      },
+      {
+        "driver": "STR",
+        "team": "Aston Martin",
+        "position": 20
+      },
+      {
+        "driver": "ALO",
+        "team": "Aston Martin",
+        "position": 21
+      },
+      {
+        "driver": "LEC",
+        "team": "Ferrari",
+        "position": 22
+      }
+    ],
+    "graded_at": "2026-09-07T02:47:51.477478+00:00"
+  },
+  "accuracy": {
+    "predicted_winner": "RUS",
+    "predicted_winner_prob_pct": 16.8,
+    "actual_winner": "ANT",
+    "winner_correct": false,
+    "actual_winner_predicted_prob_pct": 10.3,
+    "podium_hits": 1,
+    "brier_score_win": 0.0407,
+    "mean_abs_position_error": 3.18
+  }
 }

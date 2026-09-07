@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "updated_at": "2026-09-06T20:00:35.680075+00:00",
+  "updated_at": "2026-09-07T02:47:51.495908+00:00",
   "races": [
     {
       "round": 1,
@@ -91,14 +91,14 @@
       "slug": "2026-r13-italian-grand-prix",
       "race_name": "Italian Grand Prix",
       "race_date": "2026-09-06",
-      "status": "predicted"
+      "status": "completed"
     },
     {
       "round": 14,
       "slug": "2026-r14-spanish-grand-prix",
       "race_name": "Spanish Grand Prix",
       "race_date": "2026-09-13",
-      "status": "not_predicted"
+      "status": "predicted"
     },
     {
       "round": 15,
@@ -164,12 +164,12 @@
       "status": "not_predicted"
     }
   ],
-  "next_race_slug": "2026-r13-italian-grand-prix",
+  "next_race_slug": "2026-r14-spanish-grand-prix",
   "track_record": {
-    "races_scored": 3,
-    "winner_hit_rate_pct": 33.3,
-    "avg_brier_score_win": 0.0433,
-    "avg_mean_abs_position_error": 3.53,
-    "avg_podium_hits": 1.33
+    "races_scored": 4,
+    "winner_hit_rate_pct": 25.0,
+    "avg_brier_score_win": 0.0426,
+    "avg_mean_abs_position_error": 3.44,
+    "avg_podium_hits": 1.25
   }
 }
