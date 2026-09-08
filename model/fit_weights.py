@@ -80,6 +80,21 @@ CALIBRATION_LABELS = {
     "pit_weight": "Pit stops",
 }
 
+# compute_contributions()'s terms are keyed by SCORE_TERM_LABELS's names
+# (race_model.py) — a different namespace from the calibration dict's own
+# keys above (e.g. "quali_pace" vs. "quali_weight"). This maps a term's
+# key to the calibration scalar that scales it, so _scores_by_driver() can
+# look calibration up correctly instead of by (wrong) shared key.
+TERM_TO_CALIBRATION_KEY = {
+    "quali_pace": "quali_weight",
+    "season_form": "points_weight",
+    "grid_position": "grid_weight",
+    "top_speed": "top_speed_weight",
+    "tire_management": "tire_deg_weight",
+    "historical_form": "historical_weight",
+    "pit_stops": "pit_weight",
+}
+
 # Candidates tried for each term in turn, holding the others at their
 # current-best value — deliberately centered on 1.0 (the hand-tuned
 # formula, unchanged) so "no evidence to move this weight" is a real,
@@ -127,7 +142,7 @@ def _training_races() -> list[dict]:
 def _scores_by_driver(race: dict, calibration: dict) -> dict[str, float]:
     scores = {}
     for driver, terms in race["terms_by_driver"].items():
-        scores[driver] = sum(calibration[t["key"]] * t["value"] for t in terms)
+        scores[driver] = sum(calibration[TERM_TO_CALIBRATION_KEY[t["key"]]] * t["value"] for t in terms)
     return scores
 
 
