@@ -123,3 +123,74 @@ technically "not completed") outranked the real next race, round 13.
 Fixed by filtering to rounds whose date hasn't passed before picking the
 earliest — a past race that was simply never predicted isn't "next," it
 needs an explicit `--backtest` call if you want it backfilled.
+
+### 10. Hand-tuned `base_score` weights, replaced with a real (if small) fit
+
+The 7 weights in `base_score` — how much quali pace, season form, grid
+position, top speed, tire management, historical form, and pit stops
+each count toward a driver's score — were always hand-picked numbers
+(`quali_weight: 0.25`, `points_weight: 0.26`, etc.), chosen because they
+"felt about right," not derived from this project's own track record.
+Replaced with a fit against the graded rounds actually in the archive.
+
+**Method**: `model/fit_weights.py` rebuilds each graded round's exact
+blind backtest (`load_race_context(round, backtest=True)` — the same
+pre-race-only data the original prediction used, no hindsight), reads
+off each driver's 7 `base_score` terms at the untouched hand-tuned
+baseline, then runs a coordinate-wise grid search — for each term in
+turn, try a candidate multiplier (0.25x to 3.0x) holding the rest fixed,
+keep whichever minimizes a Brier-score proxy, repeat for 4 passes —
+minimizing a softmax-of-`base_score` Brier proxy (the real Monte Carlo
+model's win probability isn't cheap enough to evaluate per candidate
+during a search; softmax is the same thing if the per-driver noise were
+Gumbel instead of Gaussian, and the two look close enough to trust as a
+search proxy). The output is 7 *calibration scalars* multiplied onto the
+existing hand-tuned formula — including its circuit-conditional shape
+(e.g. grid position mattering more at a high-overtaking-difficulty
+circuit), which stays hand-set from `circuit_profiles.py` as before, since
+there isn't remotely enough data yet to fit per-circuit slopes too. If a
+fit can't beat the untouched baseline (all 1.0x) on its own training
+data, it's discarded in favor of the baseline rather than reported as a
+spurious improvement.
+
+**Sample size — the real caveat**: only 4 rounds are graded at all
+(10–13), and 2 of those (12, 13) couldn't even be rebuilt this run —
+FastF1's public API caps at 500 calls/hour, and rebuilding several
+rounds' worth of multi-year historical data hit that cap before reaching
+them. **The fit is against 2 races** (round 10, Belgian GP; round 11,
+Hungarian GP; 2026-07-19 to 2026-07-26) — realistically too few to trust
+as a real signal rather than noise. Every fitted-weight number is stored
+in `model/fitted_weights.json` alongside exactly how many races and
+which rounds it came from, so that limitation travels with the numbers
+instead of getting lost once they're sitting in a formula.
+
+**What actually changed**: `points_weight` (season form) moved to 3.0x,
+`grid_weight` and `historical_weight` moved down to 0.25x, the rest
+stayed at 1.0x (no evidence to move them). Fit from 2 races found season
+form mattering *much* more, and grid position / circuit history mattering
+*much* less, than hand-tuned — plausible in isolation, but exactly the
+kind of large swing a 2-race fit can produce from noise, not signal.
+
+**Before/after, the real (not proxy) numbers** — re-running
+`check_results.py` after regenerating rounds 10 and 11 with the fitted
+weights (12 and 13 stayed on the hand-tuned weights this run, for the
+same rate-limit reason as above): track-record average Brier **0.0426 →
+0.042** across all 4 graded rounds. A real, if tiny, improvement — and
+still well short of the always-pick-the-polesitter baseline's **0.0227**,
+consistent with the project's other finding (see the baseline-comparison
+feature) that this model doesn't yet beat that baseline. Two bugs
+surfaced getting to this real number: `fit_weights.py`'s scoring function
+initially indexed the calibration dict by each term's own key (e.g.
+`quali_pace`) instead of the key that scales it (`quali_weight` — a
+different namespace), crashing every real run with a `KeyError`; and
+`--apply` originally re-fetched each round's full blind context from
+FastF1 a second time to regenerate it, even though fitting had just
+fetched the identical data moments earlier — needlessly doubling network
+cost and crashing the whole script (losing an already-written
+`fitted_weights.json`) when that pushed the run over the rate limit.
+Fixed by reusing the already-fetched context instead of re-asking FastF1
+for it.
+
+Refit this once more graded rounds exist — 2 races isn't enough to trust,
+and the FastF1 rate-limit ceiling on fully rebuilding the whole archive
+in one CI run should ease as fewer rounds need touching per refit.
