@@ -123,7 +123,7 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
             </span>
           </div>
         )}
-        <p className="text-neutral-600 text-xs mt-3">
+        <p className="text-neutral-400 text-xs mt-3">
           Race date {formatUtcDate(race.race_date)} · generated{" "}
           {formatUtcTimestamp(race.generated_at)} · rain scenario weighted at{" "}
           {race.rain_probability_pct}%
@@ -234,7 +234,7 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <p className="text-neutral-600 text-xs mt-2">
+        <p className="text-neutral-400 text-sm mt-2">
           Error bars show ± 1 standard deviation of win probability across batches of the Monte
           Carlo simulation — how much this estimate would wobble on a re-run, not a formal
           confidence interval.
@@ -244,7 +244,7 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
       {/* Table */}
       <section className="mb-14">
         <h2 className="text-lg font-semibold mb-1">Full Prediction Table</h2>
-        <p className="text-neutral-600 text-xs mb-4">
+        <p className="text-neutral-400 text-xs mb-4">
           Click a row to see what drove that driver&apos;s score.
         </p>
         <div className="overflow-x-auto overflow-y-auto max-h-[70vh] sm:max-h-none sm:overflow-y-visible rounded-lg border border-neutral-800">
@@ -353,7 +353,7 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
         </p>
       </section>
 
-      <footer className="text-neutral-600 text-xs pt-8 border-t border-neutral-800">
+      <footer className="text-neutral-400 text-xs pt-8 border-t border-neutral-800">
         Built with FastF1 data · source on{" "}
         <a
           href="https://github.com/AaruneshAP/monza-predictor"
