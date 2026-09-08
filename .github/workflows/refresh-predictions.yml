@@ -42,6 +42,16 @@ on:
         required: false
         type: boolean
         default: false
+      backfill_rounds:
+        description: >-
+          Regenerate + re-grade specific already-graded rounds with the
+          current weights (space-separated round numbers, e.g. "12 13").
+          For backfilling a new predicted-row field (e.g. contributions,
+          win_pct_stdev) onto rounds graded before it existed, without
+          re-fitting or touching any other round. Not for regular use.
+        required: false
+        type: string
+        default: ""
 
 jobs:
   refresh:
@@ -81,8 +91,13 @@ jobs:
         working-directory: model
         run: python fit_weights.py --apply
 
+      - name: Backfill specific already-graded rounds (manual)
+        if: github.event.inputs.backfill_rounds != ''
+        working-directory: model
+        run: python backfill_round.py ${{ github.event.inputs.backfill_rounds }}
+
       - name: Commit updated predictions
-        if: steps.check.outputs.should_run == 'true' || github.event.inputs.regrade == 'true' || github.event.inputs.predict == 'true' || github.event.inputs.fit_weights == 'true'
+        if: steps.check.outputs.should_run == 'true' || github.event.inputs.regrade == 'true' || github.event.inputs.predict == 'true' || github.event.inputs.fit_weights == 'true' || github.event.inputs.backfill_rounds != ''
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
