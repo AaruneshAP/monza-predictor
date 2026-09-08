@@ -3,7 +3,7 @@ import { getIndex, getRace } from "../lib/data";
 import CalibrationChart from "../components/CalibrationChart";
 
 export const metadata = {
-  title: "Track Record — F1 Race Predictor",
+  title: "Track Record",
 };
 
 export default function TrackRecordPage() {

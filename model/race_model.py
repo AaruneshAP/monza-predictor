@@ -830,6 +830,9 @@ def compute_contributions(
     return contributions
 
 
+N_CONFIDENCE_BATCHES = 20  # see monte_carlo_simulate()'s win_pct_stdev
+
+
 def monte_carlo_simulate(
     features: pd.DataFrame,
     profile: dict,
@@ -849,7 +852,15 @@ def monte_carlo_simulate(
       4. Record finishing position for this simulation.
 
     Aggregates to win_pct, podium_pct (top 3), points_pct (top 10),
-    expected_position (mean finish across sims).
+    expected_position (mean finish across sims), and win_pct_stdev: the
+    n_sims runs are split into N_CONFIDENCE_BATCHES contiguous batches
+    (order doesn't matter — each run is independent), win_pct is computed
+    within each batch same as above, and win_pct_stdev is the standard
+    deviation across those batch-level win_pct values. That's a measure of
+    this driver's own Monte Carlo estimation noise at this sample size —
+    how much win_pct would wobble if the whole simulation were re-run —
+    not a formal statistical confidence interval on some external ground
+    truth. Reported alongside win_pct as a +/- range in the UI.
 
     Weight constants (see weight_profile_for) were tuned so a clear form
     leader lands in a believable ~25-35% win range rather than 80%+ — an
@@ -886,11 +897,15 @@ def monte_carlo_simulate(
     summary = []
     for driver, positions in results.items():
         positions = np.array(positions)
+        batch_win_pcts = [
+            (batch == 1).mean() * 100 for batch in np.array_split(positions, N_CONFIDENCE_BATCHES)
+        ]
         summary.append(
             {
                 "driver": driver,
                 "team": driver_team.get(driver, ""),
                 "win_pct": round((positions == 1).mean() * 100, 1),
+                "win_pct_stdev": round(float(np.std(batch_win_pcts, ddof=1)), 1),
                 "podium_pct": round((positions <= 3).mean() * 100, 1),
                 "points_pct": round((positions <= 10).mean() * 100, 1),
                 "expected_position": round(positions.mean(), 2),
