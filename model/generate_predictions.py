@@ -155,6 +155,7 @@ def rebuild_index() -> None:
         "races": races,
         "next_race_slug": next_race_slug,
         "track_record": archive.compute_track_record(),
+        "calibration_bins": archive.compute_calibration_bins(),
     }
     archive.write_index(index)
     print(f"Rebuilt index.json — {len(races)} rounds, next: {next_race_slug}")

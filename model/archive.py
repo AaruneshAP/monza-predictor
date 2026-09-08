@@ -49,19 +49,26 @@ def write_index(data: dict) -> None:
     INDEX_PATH.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
 
+def _scored_races() -> list[dict]:
+    """Every completed, graded race in the archive — the shared source
+    both compute_track_record() and compute_calibration_bins() walk, so
+    the two can't disagree about which races count as "graded"."""
+    if not PREDICTIONS_DIR.exists():
+        return []
+    races_scored = []
+    for path in sorted(PREDICTIONS_DIR.glob("*.json")):
+        if path.name == "index.json":
+            continue
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if data.get("status") == "completed" and data.get("accuracy"):
+            races_scored.append(data)
+    return races_scored
+
+
 def compute_track_record() -> dict:
     """Aggregates accuracy across every completed, graded race in the
     archive. Returns None-valued fields if nothing's been graded yet."""
-    if not PREDICTIONS_DIR.exists():
-        races_scored = []
-    else:
-        races_scored = []
-        for path in sorted(PREDICTIONS_DIR.glob("*.json")):
-            if path.name == "index.json":
-                continue
-            data = json.loads(path.read_text(encoding="utf-8"))
-            if data.get("status") == "completed" and data.get("accuracy"):
-                races_scored.append(data)
+    races_scored = _scored_races()
 
     if not races_scored:
         return {
@@ -97,3 +104,47 @@ def compute_track_record() -> dict:
         "avg_podium_hits": round(avg_podium_hits, 2),
         "avg_baseline_brier_score_win": avg_baseline_brier,
     }
+
+
+def compute_calibration_bins(bin_size: int = 10) -> list[dict]:
+    """Buckets every driver-race win% prediction across every graded race
+    by predicted win%, and for each bucket computes the actual win rate
+    among predictions that fell in it.
+
+    This is what a calibration plot needs and a Brier score alone
+    doesn't show: not "did we pick the right winner" but "when the model
+    said 30%, did drivers it said that about actually win about 30% of
+    the time." A model can post a fine Brier score while still being
+    systematically over- or under-confident — calibration is the check
+    for that, and it matters more than raw hit-rate for anything that
+    reports a probability rather than a single guess.
+
+    Small-sample size is exposed per bin (`n`) rather than hidden — with
+    only a handful of graded races most bins have very few points, and a
+    rate computed from 2 predictions is not the same claim as one from
+    200. The frontend should show `n` alongside each point rather than
+    let a thin bin look as authoritative as a thick one.
+    """
+    bins: dict[int, dict] = {}
+
+    for race in _scored_races():
+        actual_winner = race["accuracy"]["actual_winner"]
+        for row in race["predicted"]:
+            win_pct = row["win_pct"]
+            bin_start = min(int(win_pct // bin_size) * bin_size, 100 - bin_size)
+            b = bins.setdefault(bin_start, {"predicted_sum": 0.0, "wins": 0, "n": 0})
+            b["predicted_sum"] += win_pct
+            b["n"] += 1
+            if row["driver"] == actual_winner:
+                b["wins"] += 1
+
+    return [
+        {
+            "bin_start": bin_start,
+            "bin_end": bin_start + bin_size,
+            "n": b["n"],
+            "avg_predicted_win_pct": round(b["predicted_sum"] / b["n"], 1),
+            "actual_win_rate_pct": round(b["wins"] / b["n"] * 100, 1),
+        }
+        for bin_start, b in sorted(bins.items())
+    ]
