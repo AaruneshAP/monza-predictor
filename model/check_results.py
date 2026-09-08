@@ -37,7 +37,10 @@ def _load_actual_result(round_number: int) -> list[dict] | None:
     "+1 Lap", "Accident", "Collision", "Retired", "Engine", "Gearbox", …)
     — this is what lets _score() explain *why* a prediction missed (a
     retirement, not just a worse finish) without inventing a reason FastF1
-    doesn't actually give us."""
+    doesn't actually give us. Also carries `grid_position` (the real
+    starting slot, from the Race session's own GridPosition column) —
+    this is what identifies the polesitter for _baseline_score()'s
+    grid-based baseline, independent of anything the model predicted."""
     try:
         session = fastf1.get_session(SEASON_YEAR, round_number, "R")
         session.load(laps=False, telemetry=False, weather=False, messages=False)
@@ -58,6 +61,7 @@ def _load_actual_result(round_number: int) -> list[dict] | None:
             "team": r["TeamName"],
             "position": int(r["Position"]),
             "status": r["Status"],
+            "grid_position": int(r["GridPosition"]) if pd.notna(r["GridPosition"]) else None,
         }
         for _, r in results.iterrows()
     ]
@@ -109,6 +113,45 @@ def _result_notes(predicted: list[dict], actual: list[dict], predicted_podium: s
     return notes
 
 
+def _baseline_score(predicted: list[dict], actual: list[dict]) -> dict | None:
+    """Brier score for the simplest possible baseline — always predict the
+    polesitter (real grid P1) to win, 100% confidence, nothing else
+    considered — computed the same way as the main model's Brier score
+    and over the exact same driver universe (see _score()), so the two
+    numbers are a fair apples-to-apples comparison rather than differing
+    because they counted different drivers.
+
+    This is what a track-record page needs to actually mean something:
+    "we predicted the winner correctly 40% of the time" sounds good in
+    isolation, but polesitters win a lot in F1 anyway — a model only
+    demonstrates skill once it's shown to beat that naive heuristic, not
+    just get compared to it in prose. Returns None if no driver has a
+    real GridPosition on record (shouldn't happen for an actual race, but
+    the data source is external and not something to trust blindly).
+    """
+    grid_position_by_driver = {
+        row["driver"]: row["grid_position"] for row in actual if row.get("grid_position") is not None
+    }
+    if not grid_position_by_driver:
+        return None
+    polesitter = min(grid_position_by_driver, key=grid_position_by_driver.get)
+
+    actual_winner = next(r["driver"] for r in actual if r["position"] == 1)
+    drivers = {row["driver"] for row in predicted}
+    drivers.add(actual_winner)
+
+    brier_terms = [
+        ((1.0 if driver == polesitter else 0.0) - (1.0 if driver == actual_winner else 0.0)) ** 2
+        for driver in drivers
+    ]
+
+    return {
+        "polesitter": polesitter,
+        "winner_correct": polesitter == actual_winner,
+        "brier_score_win": round(sum(brier_terms) / len(brier_terms), 4),
+    }
+
+
 def _score(predicted: list[dict], actual: list[dict]) -> dict:
     predicted_by_driver = {row["driver"]: row for row in predicted}
     actual_position_by_driver = {row["driver"]: row["position"] for row in actual}
@@ -151,6 +194,7 @@ def _score(predicted: list[dict], actual: list[dict]) -> dict:
         "brier_score_win": round(brier_score_win, 4),
         "mean_abs_position_error": mean_abs_position_error,
         "result_notes": _result_notes(predicted, actual, predicted_podium, actual_podium),
+        "baseline": _baseline_score(predicted, actual),
     }
 
 

@@ -13,7 +13,19 @@ export type PredictionRow = {
   expected_position: number;
 };
 
-export type ActualRow = { driver: string; team: string; position: number; status?: string };
+export type ActualRow = {
+  driver: string;
+  team: string;
+  position: number;
+  status?: string;
+  grid_position?: number | null;
+};
+
+export type BaselineScore = {
+  polesitter: string;
+  winner_correct: boolean;
+  brier_score_win: number;
+};
 
 export type Accuracy = {
   predicted_winner: string;
@@ -27,6 +39,10 @@ export type Accuracy = {
   // Absent on races graded before this field existed — always guard with
   // `?.length` before rendering, never assume it's present.
   result_notes?: string[];
+  // Null if the race had no real GridPosition data to identify a
+  // polesitter from. Absent (undefined) on races graded before this
+  // field existed.
+  baseline?: BaselineScore | null;
 };
 
 export type CircuitProfile = {
@@ -70,6 +86,8 @@ export type TrackRecord = {
   avg_brier_score_win: number | null;
   avg_mean_abs_position_error: number | null;
   avg_podium_hits: number | null;
+  // Absent (null) if no graded race has real grid-position data.
+  avg_baseline_brier_score_win: number | null;
 };
 
 export type IndexFile = {

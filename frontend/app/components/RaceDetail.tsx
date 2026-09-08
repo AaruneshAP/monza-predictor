@@ -102,6 +102,32 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
               : "Predicted live, before the race."}{" "}
             See the <a href="/track-record" className="underline hover:text-accent">track record</a> page for the model's accuracy across every graded race.
           </p>
+          {race.accuracy.baseline && (
+            <p className="text-xs mt-2">
+              <span className="text-neutral-400">
+                Our model: <span className="font-medium text-neutral-200">{race.accuracy.brier_score_win}</span>
+                {" · "}
+                Grid-based baseline (always pick the polesitter): <span className="font-medium text-neutral-200">{race.accuracy.baseline.brier_score_win}</span>
+              </span>{" "}
+              <span
+                className={
+                  race.accuracy.brier_score_win < race.accuracy.baseline.brier_score_win
+                    ? "text-accent"
+                    : race.accuracy.brier_score_win > race.accuracy.baseline.brier_score_win
+                    ? "text-neutral-500"
+                    : "text-neutral-500"
+                }
+              >
+                (
+                {race.accuracy.brier_score_win < race.accuracy.baseline.brier_score_win
+                  ? "model beats the baseline — lower is better"
+                  : race.accuracy.brier_score_win > race.accuracy.baseline.brier_score_win
+                  ? "baseline beats the model this time — lower is better"
+                  : "tied with the baseline"}
+                )
+              </span>
+            </p>
+          )}
           {race.accuracy.result_notes && race.accuracy.result_notes.length > 0 && (
             <div className="mt-4 pt-4 border-t border-accent/20">
               <p className="text-neutral-500 text-xs mb-2">Where the podium call missed</p>

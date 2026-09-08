@@ -31,12 +31,27 @@ export default function TrackRecordPage() {
         </p>
       ) : (
         <>
-          <section className="mb-14 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <section className="mb-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
             <Stat label="Races scored" value={String(tr.races_scored)} />
             <Stat label="Winner hit rate" value={`${tr.winner_hit_rate_pct}%`} />
             <Stat label="Avg. Brier score (win)" value={String(tr.avg_brier_score_win)} sub="lower is better" />
             <Stat label="Avg. podium hits" value={`${tr.avg_podium_hits} / 3`} />
           </section>
+
+          {tr.avg_baseline_brier_score_win !== null && (
+            <p className="text-neutral-500 text-xs mb-14">
+              Grid-based baseline (always pick the polesitter to win) averages{" "}
+              <span className="text-neutral-300 font-medium">{tr.avg_baseline_brier_score_win}</span> Brier
+              across the same graded races —{" "}
+              {tr.avg_brier_score_win !== null && tr.avg_brier_score_win < tr.avg_baseline_brier_score_win ? (
+                <span className="text-accent">the model is beating that naive heuristic on average.</span>
+              ) : tr.avg_brier_score_win !== null && tr.avg_brier_score_win > tr.avg_baseline_brier_score_win ? (
+                <span>the model is not yet beating that naive heuristic on average — worth watching as more races get graded.</span>
+              ) : (
+                <span>the model is currently tied with that naive heuristic.</span>
+              )}
+            </p>
+          )}
 
           <section className="mb-14">
             <h2 className="text-lg font-semibold mb-4">Graded Races</h2>

@@ -70,6 +70,7 @@ def compute_track_record() -> dict:
             "avg_brier_score_win": None,
             "avg_mean_abs_position_error": None,
             "avg_podium_hits": None,
+            "avg_baseline_brier_score_win": None,
         }
 
     n = len(races_scored)
@@ -78,10 +79,21 @@ def compute_track_record() -> dict:
     avg_pos_err = sum(r["accuracy"]["mean_abs_position_error"] for r in races_scored) / n
     avg_podium_hits = sum(r["accuracy"]["podium_hits"] for r in races_scored) / n
 
+    # Grid-based baseline (always predict the polesitter to win) — absent
+    # per-race if that race had no GridPosition data, so average only over
+    # the races that actually have it rather than assuming every race does.
+    baseline_briers = [
+        r["accuracy"]["baseline"]["brier_score_win"]
+        for r in races_scored
+        if r["accuracy"].get("baseline")
+    ]
+    avg_baseline_brier = round(sum(baseline_briers) / len(baseline_briers), 4) if baseline_briers else None
+
     return {
         "races_scored": n,
         "winner_hit_rate_pct": round(winner_hits / n * 100, 1),
         "avg_brier_score_win": round(avg_brier, 4),
         "avg_mean_abs_position_error": round(avg_pos_err, 2),
         "avg_podium_hits": round(avg_podium_hits, 2),
+        "avg_baseline_brier_score_win": avg_baseline_brier,
     }
