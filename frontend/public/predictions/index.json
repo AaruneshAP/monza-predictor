@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "updated_at": "2026-09-08T11:20:33.306983+00:00",
+  "updated_at": "2026-09-08T12:42:52.046672+00:00",
   "races": [
     {
       "round": 1,
@@ -172,5 +172,28 @@
     "avg_mean_abs_position_error": 3.44,
     "avg_podium_hits": 1.25,
     "avg_baseline_brier_score_win": 0.0227
-  }
+  },
+  "calibration_bins": [
+    {
+      "bin_start": 0,
+      "bin_end": 10,
+      "n": 74,
+      "avg_predicted_win_pct": 2.3,
+      "actual_win_rate_pct": 2.7
+    },
+    {
+      "bin_start": 10,
+      "bin_end": 20,
+      "n": 12,
+      "avg_predicted_win_pct": 13.0,
+      "actual_win_rate_pct": 16.7
+    },
+    {
+      "bin_start": 30,
+      "bin_end": 40,
+      "n": 2,
+      "avg_predicted_win_pct": 36.8,
+      "actual_win_rate_pct": 0.0
+    }
+  ]
 }
