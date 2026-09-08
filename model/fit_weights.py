@@ -40,11 +40,12 @@ if the per-driver noise were i.i.d. Gumbel rather than Gaussian (the
 standard random-utility/discrete-choice result), and are a reasonable
 approximation given how close a Gaussian and a Gumbel actually look. This
 proxy is ONLY used to pick the calibration scalars efficiently — the
-authoritative before/after comparison is the real thing: regenerate each
-graded round's backtest with the fitted weights via
-`generate_predictions.py --round N --backtest --force`, then re-grade
-with `check_results.py --regrade` and compare real Brier scores, exactly
-as documented in DEBUGGING.md's entry for this change.
+authoritative before/after comparison is the real thing: --apply
+regenerates each graded round's backtest with the fitted weights
+(reusing the same blind context already fetched to fit, rather than
+asking FastF1 for it again — see _apply()'s docstring), then re-grades
+with `check_results.py --regrade` and compares real Brier scores,
+exactly as documented in DEBUGGING.md's entry for this change.
 
 Both calibration and the sample it was fit from are stored explicitly
 in fitted_weights.json rather than left implicit, because the sample is
@@ -110,6 +111,12 @@ def _training_races() -> list[dict]:
     rebuilt driver set (a last-minute substitution the backtest's grid
     projection didn't have — same "can't train on it" call check_results.py
     makes for a grid mismatch elsewhere) or if FastF1 has nothing for it.
+
+    Keeps the raw load_race_context() result alongside, so _apply() can
+    hand it straight to generate_predictions.generate() instead of
+    fetching the exact same blind context from FastF1 a second time —
+    the rate limit doesn't distinguish "new information" from "the same
+    request twice in one run."
     """
     races = []
     for race in archive._scored_races():
@@ -134,6 +141,7 @@ def _training_races() -> list[dict]:
                 "race_date": race["race_date"],
                 "actual_winner": actual_winner,
                 "terms_by_driver": {driver: c["terms"] for driver, c in contributions.items()},
+                "raw": raw,
             }
         )
     return races
@@ -204,15 +212,16 @@ def _apply(races: list[dict]) -> None:
     weights score the same pre-race-only data, not what data is used, so
     it's not hindsight.
 
-    Each round's regeneration re-fetches from FastF1 from scratch (not
-    reused from _training_races()'s own fetch), and FastF1's public API
-    caps at 500 calls/hour — comfortably exceeded by pulling several
-    rounds' worth of multi-year historical data twice in one run (once
-    to fit, once here to apply). A round that hits the cap (or any other
-    fetch failure) is skipped rather than left to crash the whole script
-    and lose the calibration this function was called to apply — that's
-    already written to fitted_weights.json by the time this runs, and is
-    worth keeping even if this run can't finish regenerating every round.
+    Each round reuses the exact blind context _training_races() already
+    fetched for it (see that function's docstring) instead of asking
+    FastF1 for the same data again — this step alone used to double the
+    run's network cost for zero new information, which is most of why it
+    used to run into FastF1's 500-calls/hour cap. A round that still
+    fails (a fetch _training_races() itself needed to retry, or anything
+    else) is skipped rather than left to crash the whole script and lose
+    the calibration this function was called to apply — that's already
+    written to fitted_weights.json by the time this runs, and is worth
+    keeping even if this run can't finish regenerating every round.
     """
     import subprocess
     import sys
@@ -225,7 +234,7 @@ def _apply(races: list[dict]) -> None:
     regenerated = []
     for race in races:
         try:
-            generate_predictions.generate(race["round"], backtest=True, force=True)
+            generate_predictions.generate(race["round"], backtest=True, force=True, raw=race["raw"])
         except Exception as exc:
             print(f"  round {race['round']} ({race['event_name']}): skipping regeneration ({exc})")
             continue

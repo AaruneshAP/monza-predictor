@@ -75,7 +75,13 @@ def _next_round_to_predict(rounds: list[dict]) -> dict:
     raise RuntimeError("Every upcoming round in circuit_profiles.py is already marked completed.")
 
 
-def generate(round_number: int, backtest: bool = False, force: bool = False) -> str:
+def generate(round_number: int, backtest: bool = False, force: bool = False, raw: dict | None = None) -> str:
+    """`raw`: an already-fetched load_race_context(round_number, backtest=backtest)
+    result, for a caller that fetched it a moment ago for its own purposes
+    (fit_weights.py's --apply, refitting the same rounds it just trained
+    on) and doesn't need this to hit FastF1 again for identical data —
+    doubling network calls for no new information, and FastF1's rate
+    limit doesn't forgive that. Defaults to fetching fresh, as before."""
     rounds_by_number = {r["round"]: r for r in _season_rounds()}
     if round_number not in rounds_by_number:
         raise ValueError(f"Round {round_number} has no schedule/profile entry.")
@@ -90,7 +96,8 @@ def generate(round_number: int, backtest: bool = False, force: bool = False) -> 
             f"afterward to re-grade it."
         )
 
-    raw = load_race_context(round_number, backtest=backtest)
+    if raw is None:
+        raw = load_race_context(round_number, backtest=backtest)
     features = build_features(raw)
     predictions = monte_carlo_simulate(
         features, raw["profile"], n_sims=100_000, rain_probability=raw["rain_probability"]
