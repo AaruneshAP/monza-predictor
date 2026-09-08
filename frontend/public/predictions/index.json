@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "updated_at": "2026-09-08T12:42:52.046672+00:00",
+  "updated_at": "2026-09-08T14:11:21.479586+00:00",
   "races": [
     {
       "round": 1,
@@ -168,8 +168,8 @@
   "track_record": {
     "races_scored": 4,
     "winner_hit_rate_pct": 25.0,
-    "avg_brier_score_win": 0.0426,
-    "avg_mean_abs_position_error": 3.44,
+    "avg_brier_score_win": 0.042,
+    "avg_mean_abs_position_error": 3.33,
     "avg_podium_hits": 1.25,
     "avg_baseline_brier_score_win": 0.0227
   },
@@ -177,22 +177,29 @@
     {
       "bin_start": 0,
       "bin_end": 10,
-      "n": 74,
-      "avg_predicted_win_pct": 2.3,
-      "actual_win_rate_pct": 2.7
+      "n": 72,
+      "avg_predicted_win_pct": 1.8,
+      "actual_win_rate_pct": 2.8
     },
     {
       "bin_start": 10,
       "bin_end": 20,
-      "n": 12,
-      "avg_predicted_win_pct": 13.0,
-      "actual_win_rate_pct": 16.7
+      "n": 13,
+      "avg_predicted_win_pct": 13.7,
+      "actual_win_rate_pct": 7.7
+    },
+    {
+      "bin_start": 20,
+      "bin_end": 30,
+      "n": 1,
+      "avg_predicted_win_pct": 21.3,
+      "actual_win_rate_pct": 100.0
     },
     {
       "bin_start": 30,
       "bin_end": 40,
       "n": 2,
-      "avg_predicted_win_pct": 36.8,
+      "avg_predicted_win_pct": 34.9,
       "actual_win_rate_pct": 0.0
     }
   ]

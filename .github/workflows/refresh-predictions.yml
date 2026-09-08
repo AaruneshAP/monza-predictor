@@ -31,6 +31,17 @@ on:
         required: false
         type: boolean
         default: false
+      fit_weights:
+        description: >-
+          Re-fit the base_score term weights against every graded round
+          (model/fit_weights.py --apply) — writes fitted_weights.json and
+          regenerates+re-grades every trained-on round's backtest with it,
+          for a real before/after Brier comparison. A one-off, not for
+          regular use; the fitted weights apply automatically to every
+          later run once written.
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   refresh:
@@ -65,11 +76,17 @@ jobs:
         working-directory: model
         run: python check_results.py --regrade
 
+      - name: Fit base_score term weights against the graded track record
+        if: github.event.inputs.fit_weights == 'true'
+        working-directory: model
+        run: python fit_weights.py --apply
+
       - name: Commit updated predictions
-        if: steps.check.outputs.should_run == 'true' || github.event.inputs.regrade == 'true' || github.event.inputs.predict == 'true'
+        if: steps.check.outputs.should_run == 'true' || github.event.inputs.regrade == 'true' || github.event.inputs.predict == 'true' || github.event.inputs.fit_weights == 'true'
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add frontend/public/predictions/
+          if [ -f model/fitted_weights.json ]; then git add model/fitted_weights.json; fi
           git diff --staged --quiet || git commit -m "Refresh predictions"
           git push

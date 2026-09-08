@@ -4,7 +4,7 @@
   "race_name": "Spanish Grand Prix",
   "slug": "2026-r14-spanish-grand-prix",
   "race_date": "2026-09-13",
-  "generated_at": "2026-09-08T12:42:51.483896+00:00",
+  "generated_at": "2026-09-08T14:04:55.201187+00:00",
   "backtest": false,
   "status": "predicted",
   "n_simulations": 100000,
@@ -22,11 +22,11 @@
       "driver": "ANT",
       "team": "Mercedes",
       "win_pct": 29.5,
-      "podium_pct": 56.2,
-      "points_pct": 89.1,
-      "expected_position": 4.54,
+      "podium_pct": 61.3,
+      "points_pct": 95.5,
+      "expected_position": 3.69,
       "contributions": {
-        "base_score": 0.7072,
+        "base_score": 1.0454,
         "terms": [
           {
             "key": "quali_pace",
@@ -36,105 +36,7 @@
           {
             "key": "season_form",
             "label": "Season form (championship points)",
-            "value": 0.26
-          },
-          {
-            "key": "grid_position",
-            "label": "Grid position",
-            "value": 0.2
-          },
-          {
-            "key": "top_speed",
-            "label": "Top speed",
-            "value": 0.0648
-          },
-          {
-            "key": "tire_management",
-            "label": "Tire management",
-            "value": 0.04
-          },
-          {
-            "key": "historical_form",
-            "label": "Historical form at this circuit",
-            "value": 0.0425
-          },
-          {
-            "key": "pit_stops",
-            "label": "Pit stops",
-            "value": -0.025
-          }
-        ]
-      }
-    },
-    {
-      "position": 2,
-      "driver": "RUS",
-      "team": "Mercedes",
-      "win_pct": 13.3,
-      "podium_pct": 34.6,
-      "points_pct": 76.6,
-      "expected_position": 6.86,
-      "contributions": {
-        "base_score": 0.5954,
-        "terms": [
-          {
-            "key": "quali_pace",
-            "label": "Quali pace",
-            "value": 0.125
-          },
-          {
-            "key": "season_form",
-            "label": "Season form (championship points)",
-            "value": 0.2482
-          },
-          {
-            "key": "grid_position",
-            "label": "Grid position",
-            "value": 0.1
-          },
-          {
-            "key": "top_speed",
-            "label": "Top speed",
-            "value": 0.0648
-          },
-          {
-            "key": "tire_management",
-            "label": "Tire management",
-            "value": 0.04
-          },
-          {
-            "key": "historical_form",
-            "label": "Historical form at this circuit",
-            "value": 0.0425
-          },
-          {
-            "key": "pit_stops",
-            "label": "Pit stops",
-            "value": -0.025
-          }
-        ]
-      }
-    },
-    {
-      "position": 3,
-      "driver": "NOR",
-      "team": "McLaren",
-      "win_pct": 7.2,
-      "podium_pct": 22.8,
-      "points_pct": 65.0,
-      "expected_position": 8.63,
-      "contributions": {
-        "base_score": 0.5218,
-        "terms": [
-          {
-            "key": "quali_pace",
-            "label": "Quali pace",
-            "value": 0.125
-          },
-          {
-            "key": "season_form",
-            "label": "Season form (championship points)",
-            "value": 0.2245
+            "value": 0.78
           },
           {
             "key": "grid_position",
@@ -154,7 +56,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0425
+            "value": 0.0106
           },
           {
             "key": "pit_stops",
@@ -165,15 +67,15 @@
       }
     },
     {
-      "position": 4,
-      "driver": "VER",
-      "team": "Red Bull",
-      "win_pct": 7.0,
-      "podium_pct": 21.9,
-      "points_pct": 63.9,
-      "expected_position": 8.8,
+      "position": 2,
+      "driver": "RUS",
+      "team": "Mercedes",
+      "win_pct": 19.4,
+      "podium_pct": 49.2,
+      "points_pct": 92.7,
+      "expected_position": 4.55,
       "contributions": {
-        "base_score": 0.5148,
+        "base_score": 0.9849,
         "terms": [
           {
             "key": "quali_pace",
@@ -183,301 +85,7 @@
           {
             "key": "season_form",
             "label": "Season form (championship points)",
-            "value": 0.2009
-          },
-          {
-            "key": "grid_position",
-            "label": "Grid position",
-            "value": 0.0667
-          },
-          {
-            "key": "top_speed",
-            "label": "Top speed",
-            "value": 0.0648
-          },
-          {
-            "key": "tire_management",
-            "label": "Tire management",
-            "value": 0.04
-          },
-          {
-            "key": "historical_form",
-            "label": "Historical form at this circuit",
-            "value": 0.0425
-          },
-          {
-            "key": "pit_stops",
-            "label": "Pit stops",
-            "value": -0.025
-          }
-        ]
-      }
-    },
-    {
-      "position": 5,
-      "driver": "HAM",
-      "team": "Ferrari",
-      "win_pct": 6.9,
-      "podium_pct": 22.0,
-      "points_pct": 64.0,
-      "expected_position": 8.79,
-      "contributions": {
-        "base_score": 0.5169,
-        "terms": [
-          {
-            "key": "quali_pace",
-            "label": "Quali pace",
-            "value": 0.125
-          },
-          {
-            "key": "season_form",
-            "label": "Season form (championship points)",
-            "value": 0.2364
-          },
-          {
-            "key": "grid_position",
-            "label": "Grid position",
-            "value": 0.0333
-          },
-          {
-            "key": "top_speed",
-            "label": "Top speed",
-            "value": 0.0648
-          },
-          {
-            "key": "tire_management",
-            "label": "Tire management",
-            "value": 0.04
-          },
-          {
-            "key": "historical_form",
-            "label": "Historical form at this circuit",
-            "value": 0.0425
-          },
-          {
-            "key": "pit_stops",
-            "label": "Pit stops",
-            "value": -0.025
-          }
-        ]
-      }
-    },
-    {
-      "position": 6,
-      "driver": "PIA",
-      "team": "McLaren",
-      "win_pct": 4.9,
-      "podium_pct": 16.7,
-      "points_pct": 56.7,
-      "expected_position": 9.84,
-      "contributions": {
-        "base_score": 0.4763,
-        "terms": [
-          {
-            "key": "quali_pace",
-            "label": "Quali pace",
-            "value": 0.125
-          },
-          {
-            "key": "season_form",
-            "label": "Season form (championship points)",
-            "value": 0.1891
-          },
-          {
-            "key": "grid_position",
-            "label": "Grid position",
-            "value": 0.04
-          },
-          {
-            "key": "top_speed",
-            "label": "Top speed",
-            "value": 0.0648
-          },
-          {
-            "key": "tire_management",
-            "label": "Tire management",
-            "value": 0.04
-          },
-          {
-            "key": "historical_form",
-            "label": "Historical form at this circuit",
-            "value": 0.0425
-          },
-          {
-            "key": "pit_stops",
-            "label": "Pit stops",
-            "value": -0.025
-          }
-        ]
-      }
-    },
-    {
-      "position": 7,
-      "driver": "LEC",
-      "team": "Ferrari",
-      "win_pct": 4.7,
-      "podium_pct": 16.3,
-      "points_pct": 55.5,
-      "expected_position": 10.0,
-      "contributions": {
-        "base_score": 0.4691,
-        "terms": [
-          {
-            "key": "quali_pace",
-            "label": "Quali pace",
-            "value": 0.125
-          },
-          {
-            "key": "season_form",
-            "label": "Season form (championship points)",
-            "value": 0.2127
-          },
-          {
-            "key": "grid_position",
-            "label": "Grid position",
-            "value": 0.0091
-          },
-          {
-            "key": "top_speed",
-            "label": "Top speed",
-            "value": 0.0648
-          },
-          {
-            "key": "tire_management",
-            "label": "Tire management",
-            "value": 0.04
-          },
-          {
-            "key": "historical_form",
-            "label": "Historical form at this circuit",
-            "value": 0.0425
-          },
-          {
-            "key": "pit_stops",
-            "label": "Pit stops",
-            "value": -0.025
-          }
-        ]
-      }
-    },
-    {
-      "position": 8,
-      "driver": "GAS",
-      "team": "Alpine F1 Team",
-      "win_pct": 3.5,
-      "podium_pct": 13.1,
-      "points_pct": 50.3,
-      "expected_position": 10.78,
-      "contributions": {
-        "base_score": 0.4413,
-        "terms": [
-          {
-            "key": "quali_pace",
-            "label": "Quali pace",
-            "value": 0.125
-          },
-          {
-            "key": "season_form",
-            "label": "Season form (championship points)",
-            "value": 0.1655
-          },
-          {
-            "key": "grid_position",
-            "label": "Grid position",
-            "value": 0.0286
-          },
-          {
-            "key": "top_speed",
-            "label": "Top speed",
-            "value": 0.0648
-          },
-          {
-            "key": "tire_management",
-            "label": "Tire management",
-            "value": 0.04
-          },
-          {
-            "key": "historical_form",
-            "label": "Historical form at this circuit",
-            "value": 0.0425
-          },
-          {
-            "key": "pit_stops",
-            "label": "Pit stops",
-            "value": -0.025
-          }
-        ]
-      }
-    },
-    {
-      "position": 9,
-      "driver": "LAW",
-      "team": "Red Bull",
-      "win_pct": 3.4,
-      "podium_pct": 13.0,
-      "points_pct": 50.1,
-      "expected_position": 10.81,
-      "contributions": {
-        "base_score": 0.4388,
-        "terms": [
-          {
-            "key": "quali_pace",
-            "label": "Quali pace",
-            "value": 0.125
-          },
-          {
-            "key": "season_form",
-            "label": "Season form (championship points)",
-            "value": 0.1773
-          },
-          {
-            "key": "grid_position",
-            "label": "Grid position",
-            "value": 0.0143
-          },
-          {
-            "key": "top_speed",
-            "label": "Top speed",
-            "value": 0.0648
-          },
-          {
-            "key": "tire_management",
-            "label": "Tire management",
-            "value": 0.04
-          },
-          {
-            "key": "historical_form",
-            "label": "Historical form at this circuit",
-            "value": 0.0425
-          },
-          {
-            "key": "pit_stops",
-            "label": "Pit stops",
-            "value": -0.025
-          }
-        ]
-      }
-    },
-    {
-      "position": 10,
-      "driver": "LIN",
-      "team": "RB F1 Team",
-      "win_pct": 3.1,
-      "podium_pct": 11.9,
-      "points_pct": 47.4,
-      "expected_position": 11.18,
-      "contributions": {
-        "base_score": 0.4259,
-        "terms": [
-          {
-            "key": "quali_pace",
-            "label": "Quali pace",
-            "value": 0.125
-          },
-          {
-            "key": "season_form",
-            "label": "Season form (championship points)",
-            "value": 0.1536
+            "value": 0.7445
           },
           {
             "key": "grid_position",
@@ -497,7 +105,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0425
+            "value": 0.0106
           },
           {
             "key": "pit_stops",
@@ -508,15 +116,15 @@
       }
     },
     {
-      "position": 11,
-      "driver": "COL",
-      "team": "Alpine F1 Team",
-      "win_pct": 2.7,
-      "podium_pct": 10.3,
-      "points_pct": 44.3,
-      "expected_position": 11.62,
+      "position": 3,
+      "driver": "HAM",
+      "team": "Ferrari",
+      "win_pct": 13.3,
+      "podium_pct": 39.3,
+      "points_pct": 88.8,
+      "expected_position": 5.39,
       "contributions": {
-        "base_score": 0.4113,
+        "base_score": 0.9328,
         "terms": [
           {
             "key": "quali_pace",
@@ -526,12 +134,12 @@
           {
             "key": "season_form",
             "label": "Season form (championship points)",
-            "value": 0.1418
+            "value": 0.7091
           },
           {
             "key": "grid_position",
             "label": "Grid position",
-            "value": 0.0222
+            "value": 0.0083
           },
           {
             "key": "top_speed",
@@ -546,7 +154,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0425
+            "value": 0.0106
           },
           {
             "key": "pit_stops",
@@ -557,15 +165,15 @@
       }
     },
     {
-      "position": 12,
-      "driver": "BEA",
-      "team": "Haas F1 Team",
-      "win_pct": 2.2,
-      "podium_pct": 8.9,
-      "points_pct": 40.7,
-      "expected_position": 12.15,
+      "position": 4,
+      "driver": "NOR",
+      "team": "McLaren",
+      "win_pct": 10.4,
+      "podium_pct": 33.9,
+      "points_pct": 86.4,
+      "expected_position": 5.89,
       "contributions": {
-        "base_score": 0.3906,
+        "base_score": 0.9015,
         "terms": [
           {
             "key": "quali_pace",
@@ -575,252 +183,7 @@
           {
             "key": "season_form",
             "label": "Season form (championship points)",
-            "value": 0.13
-          },
-          {
-            "key": "grid_position",
-            "label": "Grid position",
-            "value": 0.0133
-          },
-          {
-            "key": "top_speed",
-            "label": "Top speed",
-            "value": 0.0648
-          },
-          {
-            "key": "tire_management",
-            "label": "Tire management",
-            "value": 0.04
-          },
-          {
-            "key": "historical_form",
-            "label": "Historical form at this circuit",
-            "value": 0.0425
-          },
-          {
-            "key": "pit_stops",
-            "label": "Pit stops",
-            "value": -0.025
-          }
-        ]
-      }
-    },
-    {
-      "position": 13,
-      "driver": "BOR",
-      "team": "Audi",
-      "win_pct": 2.1,
-      "podium_pct": 8.4,
-      "points_pct": 39.5,
-      "expected_position": 12.34,
-      "contributions": {
-        "base_score": 0.3836,
-        "terms": [
-          {
-            "key": "quali_pace",
-            "label": "Quali pace",
-            "value": 0.125
-          },
-          {
-            "key": "season_form",
-            "label": "Season form (championship points)",
-            "value": 0.1182
-          },
-          {
-            "key": "grid_position",
-            "label": "Grid position",
-            "value": 0.0182
-          },
-          {
-            "key": "top_speed",
-            "label": "Top speed",
-            "value": 0.0648
-          },
-          {
-            "key": "tire_management",
-            "label": "Tire management",
-            "value": 0.04
-          },
-          {
-            "key": "historical_form",
-            "label": "Historical form at this circuit",
-            "value": 0.0425
-          },
-          {
-            "key": "pit_stops",
-            "label": "Pit stops",
-            "value": -0.025
-          }
-        ]
-      }
-    },
-    {
-      "position": 14,
-      "driver": "SAI",
-      "team": "Williams",
-      "win_pct": 1.7,
-      "podium_pct": 7.0,
-      "points_pct": 35.7,
-      "expected_position": 12.92,
-      "contributions": {
-        "base_score": 0.3631,
-        "terms": [
-          {
-            "key": "quali_pace",
-            "label": "Quali pace",
-            "value": 0.125
-          },
-          {
-            "key": "season_form",
-            "label": "Season form (championship points)",
-            "value": 0.1005
-          },
-          {
-            "key": "grid_position",
-            "label": "Grid position",
-            "value": 0.0154
-          },
-          {
-            "key": "top_speed",
-            "label": "Top speed",
-            "value": 0.0648
-          },
-          {
-            "key": "tire_management",
-            "label": "Tire management",
-            "value": 0.04
-          },
-          {
-            "key": "historical_form",
-            "label": "Historical form at this circuit",
-            "value": 0.0425
-          },
-          {
-            "key": "pit_stops",
-            "label": "Pit stops",
-            "value": -0.025
-          }
-        ]
-      }
-    },
-    {
-      "position": 15,
-      "driver": "HUL",
-      "team": "Audi",
-      "win_pct": 1.6,
-      "podium_pct": 7.0,
-      "points_pct": 35.7,
-      "expected_position": 12.89,
-      "contributions": {
-        "base_score": 0.3644,
-        "terms": [
-          {
-            "key": "quali_pace",
-            "label": "Quali pace",
-            "value": 0.125
-          },
-          {
-            "key": "season_form",
-            "label": "Season form (championship points)",
-            "value": 0.1005
-          },
-          {
-            "key": "grid_position",
-            "label": "Grid position",
-            "value": 0.0167
-          },
-          {
-            "key": "top_speed",
-            "label": "Top speed",
-            "value": 0.0648
-          },
-          {
-            "key": "tire_management",
-            "label": "Tire management",
-            "value": 0.04
-          },
-          {
-            "key": "historical_form",
-            "label": "Historical form at this circuit",
-            "value": 0.0425
-          },
-          {
-            "key": "pit_stops",
-            "label": "Pit stops",
-            "value": -0.025
-          }
-        ]
-      }
-    },
-    {
-      "position": 16,
-      "driver": "ALB",
-      "team": "Williams",
-      "win_pct": 1.3,
-      "podium_pct": 5.8,
-      "points_pct": 32.0,
-      "expected_position": 13.5,
-      "contributions": {
-        "base_score": 0.3417,
-        "terms": [
-          {
-            "key": "quali_pace",
-            "label": "Quali pace",
-            "value": 0.125
-          },
-          {
-            "key": "season_form",
-            "label": "Season form (championship points)",
-            "value": 0.0827
-          },
-          {
-            "key": "grid_position",
-            "label": "Grid position",
-            "value": 0.0118
-          },
-          {
-            "key": "top_speed",
-            "label": "Top speed",
-            "value": 0.0648
-          },
-          {
-            "key": "tire_management",
-            "label": "Tire management",
-            "value": 0.04
-          },
-          {
-            "key": "historical_form",
-            "label": "Historical form at this circuit",
-            "value": 0.0425
-          },
-          {
-            "key": "pit_stops",
-            "label": "Pit stops",
-            "value": -0.025
-          }
-        ]
-      }
-    },
-    {
-      "position": 17,
-      "driver": "OCO",
-      "team": "Haas F1 Team",
-      "win_pct": 1.1,
-      "podium_pct": 5.0,
-      "points_pct": 29.3,
-      "expected_position": 13.93,
-      "contributions": {
-        "base_score": 0.3247,
-        "terms": [
-          {
-            "key": "quali_pace",
-            "label": "Quali pace",
-            "value": 0.125
-          },
-          {
-            "key": "season_form",
-            "label": "Season form (championship points)",
-            "value": 0.065
+            "value": 0.6736
           },
           {
             "key": "grid_position",
@@ -840,7 +203,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0425
+            "value": 0.0106
           },
           {
             "key": "pit_stops",
@@ -851,15 +214,15 @@
       }
     },
     {
-      "position": 18,
-      "driver": "TSU",
-      "team": "RB F1 Team",
-      "win_pct": 1.0,
-      "podium_pct": 4.5,
-      "points_pct": 27.5,
-      "expected_position": 14.23,
+      "position": 5,
+      "driver": "LEC",
+      "team": "Ferrari",
+      "win_pct": 7.4,
+      "podium_pct": 26.4,
+      "points_pct": 81.2,
+      "expected_position": 6.73,
       "contributions": {
-        "base_score": 0.3145,
+        "base_score": 0.8558,
         "terms": [
           {
             "key": "quali_pace",
@@ -869,12 +232,12 @@
           {
             "key": "season_form",
             "label": "Season form (championship points)",
-            "value": 0.0473
+            "value": 0.6382
           },
           {
             "key": "grid_position",
             "label": "Grid position",
-            "value": 0.02
+            "value": 0.0023
           },
           {
             "key": "top_speed",
@@ -889,7 +252,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0425
+            "value": 0.0106
           },
           {
             "key": "pit_stops",
@@ -900,15 +263,15 @@
       }
     },
     {
-      "position": 19,
-      "driver": "ALO",
-      "team": "Aston Martin",
-      "win_pct": 1.0,
-      "podium_pct": 4.8,
-      "points_pct": 28.6,
-      "expected_position": 14.02,
+      "position": 6,
+      "driver": "VER",
+      "team": "Red Bull",
+      "win_pct": 6.1,
+      "podium_pct": 23.0,
+      "points_pct": 78.6,
+      "expected_position": 7.14,
       "contributions": {
-        "base_score": 0.3218,
+        "base_score": 0.8348,
         "terms": [
           {
             "key": "quali_pace",
@@ -918,12 +281,12 @@
           {
             "key": "season_form",
             "label": "Season form (championship points)",
-            "value": 0.065
+            "value": 0.6027
           },
           {
             "key": "grid_position",
             "label": "Grid position",
-            "value": 0.0095
+            "value": 0.0167
           },
           {
             "key": "top_speed",
@@ -938,7 +301,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0425
+            "value": 0.0106
           },
           {
             "key": "pit_stops",
@@ -949,15 +312,15 @@
       }
     },
     {
-      "position": 20,
-      "driver": "PER",
-      "team": "Cadillac F1 Team",
-      "win_pct": 0.7,
-      "podium_pct": 3.4,
-      "points_pct": 22.9,
-      "expected_position": 15.04,
+      "position": 7,
+      "driver": "PIA",
+      "team": "McLaren",
+      "win_pct": 4.2,
+      "podium_pct": 17.3,
+      "points_pct": 72.3,
+      "expected_position": 8.0,
       "contributions": {
-        "base_score": 0.282,
+        "base_score": 0.7926,
         "terms": [
           {
             "key": "quali_pace",
@@ -967,56 +330,7 @@
           {
             "key": "season_form",
             "label": "Season form (championship points)",
-            "value": 0.0236
-          },
-          {
-            "key": "grid_position",
-            "label": "Grid position",
-            "value": 0.0111
-          },
-          {
-            "key": "top_speed",
-            "label": "Top speed",
-            "value": 0.0648
-          },
-          {
-            "key": "tire_management",
-            "label": "Tire management",
-            "value": 0.04
-          },
-          {
-            "key": "historical_form",
-            "label": "Historical form at this circuit",
-            "value": 0.0425
-          },
-          {
-            "key": "pit_stops",
-            "label": "Pit stops",
-            "value": -0.025
-          }
-        ]
-      }
-    },
-    {
-      "position": 21,
-      "driver": "STR",
-      "team": "Aston Martin",
-      "win_pct": 0.7,
-      "podium_pct": 3.3,
-      "points_pct": 22.6,
-      "expected_position": 15.07,
-      "contributions": {
-        "base_score": 0.2809,
-        "terms": [
-          {
-            "key": "quali_pace",
-            "label": "Quali pace",
-            "value": 0.125
-          },
-          {
-            "key": "season_form",
-            "label": "Season form (championship points)",
-            "value": 0.0236
+            "value": 0.5673
           },
           {
             "key": "grid_position",
@@ -1036,7 +350,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0425
+            "value": 0.0106
           },
           {
             "key": "pit_stops",
@@ -1047,15 +361,15 @@
       }
     },
     {
-      "position": 22,
-      "driver": "BOT",
-      "team": "Cadillac F1 Team",
-      "win_pct": 0.7,
-      "podium_pct": 3.3,
-      "points_pct": 22.8,
-      "expected_position": 15.05,
+      "position": 8,
+      "driver": "LAW",
+      "team": "Red Bull",
+      "win_pct": 2.8,
+      "podium_pct": 12.9,
+      "points_pct": 65.6,
+      "expected_position": 8.84,
       "contributions": {
-        "base_score": 0.2814,
+        "base_score": 0.7508,
         "terms": [
           {
             "key": "quali_pace",
@@ -1065,12 +379,12 @@
           {
             "key": "season_form",
             "label": "Season form (championship points)",
-            "value": 0.0236
+            "value": 0.5318
           },
           {
             "key": "grid_position",
             "label": "Grid position",
-            "value": 0.0105
+            "value": 0.0036
           },
           {
             "key": "top_speed",
@@ -1085,7 +399,693 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0425
+            "value": 0.0106
+          },
+          {
+            "key": "pit_stops",
+            "label": "Pit stops",
+            "value": -0.025
+          }
+        ]
+      }
+    },
+    {
+      "position": 9,
+      "driver": "GAS",
+      "team": "Alpine F1 Team",
+      "win_pct": 2.1,
+      "podium_pct": 10.1,
+      "points_pct": 59.9,
+      "expected_position": 9.55,
+      "contributions": {
+        "base_score": 0.7189,
+        "terms": [
+          {
+            "key": "quali_pace",
+            "label": "Quali pace",
+            "value": 0.125
+          },
+          {
+            "key": "season_form",
+            "label": "Season form (championship points)",
+            "value": 0.4964
+          },
+          {
+            "key": "grid_position",
+            "label": "Grid position",
+            "value": 0.0071
+          },
+          {
+            "key": "top_speed",
+            "label": "Top speed",
+            "value": 0.0648
+          },
+          {
+            "key": "tire_management",
+            "label": "Tire management",
+            "value": 0.04
+          },
+          {
+            "key": "historical_form",
+            "label": "Historical form at this circuit",
+            "value": 0.0106
+          },
+          {
+            "key": "pit_stops",
+            "label": "Pit stops",
+            "value": -0.025
+          }
+        ]
+      }
+    },
+    {
+      "position": 10,
+      "driver": "LIN",
+      "team": "RB F1 Team",
+      "win_pct": 1.5,
+      "podium_pct": 7.7,
+      "points_pct": 52.8,
+      "expected_position": 10.33,
+      "contributions": {
+        "base_score": 0.6825,
+        "terms": [
+          {
+            "key": "quali_pace",
+            "label": "Quali pace",
+            "value": 0.125
+          },
+          {
+            "key": "season_form",
+            "label": "Season form (championship points)",
+            "value": 0.4609
+          },
+          {
+            "key": "grid_position",
+            "label": "Grid position",
+            "value": 0.0063
+          },
+          {
+            "key": "top_speed",
+            "label": "Top speed",
+            "value": 0.0648
+          },
+          {
+            "key": "tire_management",
+            "label": "Tire management",
+            "value": 0.04
+          },
+          {
+            "key": "historical_form",
+            "label": "Historical form at this circuit",
+            "value": 0.0106
+          },
+          {
+            "key": "pit_stops",
+            "label": "Pit stops",
+            "value": -0.025
+          }
+        ]
+      }
+    },
+    {
+      "position": 11,
+      "driver": "COL",
+      "team": "Alpine F1 Team",
+      "win_pct": 1.0,
+      "podium_pct": 5.5,
+      "points_pct": 45.5,
+      "expected_position": 11.15,
+      "contributions": {
+        "base_score": 0.6464,
+        "terms": [
+          {
+            "key": "quali_pace",
+            "label": "Quali pace",
+            "value": 0.125
+          },
+          {
+            "key": "season_form",
+            "label": "Season form (championship points)",
+            "value": 0.4255
+          },
+          {
+            "key": "grid_position",
+            "label": "Grid position",
+            "value": 0.0056
+          },
+          {
+            "key": "top_speed",
+            "label": "Top speed",
+            "value": 0.0648
+          },
+          {
+            "key": "tire_management",
+            "label": "Tire management",
+            "value": 0.04
+          },
+          {
+            "key": "historical_form",
+            "label": "Historical form at this circuit",
+            "value": 0.0106
+          },
+          {
+            "key": "pit_stops",
+            "label": "Pit stops",
+            "value": -0.025
+          }
+        ]
+      }
+    },
+    {
+      "position": 12,
+      "driver": "BEA",
+      "team": "Haas F1 Team",
+      "win_pct": 0.7,
+      "podium_pct": 4.0,
+      "points_pct": 38.8,
+      "expected_position": 11.96,
+      "contributions": {
+        "base_score": 0.6087,
+        "terms": [
+          {
+            "key": "quali_pace",
+            "label": "Quali pace",
+            "value": 0.125
+          },
+          {
+            "key": "season_form",
+            "label": "Season form (championship points)",
+            "value": 0.39
+          },
+          {
+            "key": "grid_position",
+            "label": "Grid position",
+            "value": 0.0033
+          },
+          {
+            "key": "top_speed",
+            "label": "Top speed",
+            "value": 0.0648
+          },
+          {
+            "key": "tire_management",
+            "label": "Tire management",
+            "value": 0.04
+          },
+          {
+            "key": "historical_form",
+            "label": "Historical form at this circuit",
+            "value": 0.0106
+          },
+          {
+            "key": "pit_stops",
+            "label": "Pit stops",
+            "value": -0.025
+          }
+        ]
+      }
+    },
+    {
+      "position": 13,
+      "driver": "BOR",
+      "team": "Audi",
+      "win_pct": 0.5,
+      "podium_pct": 2.9,
+      "points_pct": 32.8,
+      "expected_position": 12.71,
+      "contributions": {
+        "base_score": 0.5745,
+        "terms": [
+          {
+            "key": "quali_pace",
+            "label": "Quali pace",
+            "value": 0.125
+          },
+          {
+            "key": "season_form",
+            "label": "Season form (championship points)",
+            "value": 0.3545
+          },
+          {
+            "key": "grid_position",
+            "label": "Grid position",
+            "value": 0.0045
+          },
+          {
+            "key": "top_speed",
+            "label": "Top speed",
+            "value": 0.0648
+          },
+          {
+            "key": "tire_management",
+            "label": "Tire management",
+            "value": 0.04
+          },
+          {
+            "key": "historical_form",
+            "label": "Historical form at this circuit",
+            "value": 0.0106
+          },
+          {
+            "key": "pit_stops",
+            "label": "Pit stops",
+            "value": -0.025
+          }
+        ]
+      }
+    },
+    {
+      "position": 14,
+      "driver": "SAI",
+      "team": "Williams",
+      "win_pct": 0.3,
+      "podium_pct": 1.8,
+      "points_pct": 24.2,
+      "expected_position": 13.91,
+      "contributions": {
+        "base_score": 0.5206,
+        "terms": [
+          {
+            "key": "quali_pace",
+            "label": "Quali pace",
+            "value": 0.125
+          },
+          {
+            "key": "season_form",
+            "label": "Season form (championship points)",
+            "value": 0.3014
+          },
+          {
+            "key": "grid_position",
+            "label": "Grid position",
+            "value": 0.0038
+          },
+          {
+            "key": "top_speed",
+            "label": "Top speed",
+            "value": 0.0648
+          },
+          {
+            "key": "tire_management",
+            "label": "Tire management",
+            "value": 0.04
+          },
+          {
+            "key": "historical_form",
+            "label": "Historical form at this circuit",
+            "value": 0.0106
+          },
+          {
+            "key": "pit_stops",
+            "label": "Pit stops",
+            "value": -0.025
+          }
+        ]
+      }
+    },
+    {
+      "position": 15,
+      "driver": "ALB",
+      "team": "Williams",
+      "win_pct": 0.2,
+      "podium_pct": 1.0,
+      "points_pct": 16.9,
+      "expected_position": 15.06,
+      "contributions": {
+        "base_score": 0.4665,
+        "terms": [
+          {
+            "key": "quali_pace",
+            "label": "Quali pace",
+            "value": 0.125
+          },
+          {
+            "key": "season_form",
+            "label": "Season form (championship points)",
+            "value": 0.2482
+          },
+          {
+            "key": "grid_position",
+            "label": "Grid position",
+            "value": 0.0029
+          },
+          {
+            "key": "top_speed",
+            "label": "Top speed",
+            "value": 0.0648
+          },
+          {
+            "key": "tire_management",
+            "label": "Tire management",
+            "value": 0.04
+          },
+          {
+            "key": "historical_form",
+            "label": "Historical form at this circuit",
+            "value": 0.0106
+          },
+          {
+            "key": "pit_stops",
+            "label": "Pit stops",
+            "value": -0.025
+          }
+        ]
+      }
+    },
+    {
+      "position": 16,
+      "driver": "HUL",
+      "team": "Audi",
+      "win_pct": 0.2,
+      "podium_pct": 1.7,
+      "points_pct": 23.9,
+      "expected_position": 13.92,
+      "contributions": {
+        "base_score": 0.5209,
+        "terms": [
+          {
+            "key": "quali_pace",
+            "label": "Quali pace",
+            "value": 0.125
+          },
+          {
+            "key": "season_form",
+            "label": "Season form (championship points)",
+            "value": 0.3014
+          },
+          {
+            "key": "grid_position",
+            "label": "Grid position",
+            "value": 0.0042
+          },
+          {
+            "key": "top_speed",
+            "label": "Top speed",
+            "value": 0.0648
+          },
+          {
+            "key": "tire_management",
+            "label": "Tire management",
+            "value": 0.04
+          },
+          {
+            "key": "historical_form",
+            "label": "Historical form at this circuit",
+            "value": 0.0106
+          },
+          {
+            "key": "pit_stops",
+            "label": "Pit stops",
+            "value": -0.025
+          }
+        ]
+      }
+    },
+    {
+      "position": 17,
+      "driver": "ALO",
+      "team": "Aston Martin",
+      "win_pct": 0.1,
+      "podium_pct": 0.6,
+      "points_pct": 11.7,
+      "expected_position": 16.12,
+      "contributions": {
+        "base_score": 0.4128,
+        "terms": [
+          {
+            "key": "quali_pace",
+            "label": "Quali pace",
+            "value": 0.125
+          },
+          {
+            "key": "season_form",
+            "label": "Season form (championship points)",
+            "value": 0.195
+          },
+          {
+            "key": "grid_position",
+            "label": "Grid position",
+            "value": 0.0024
+          },
+          {
+            "key": "top_speed",
+            "label": "Top speed",
+            "value": 0.0648
+          },
+          {
+            "key": "tire_management",
+            "label": "Tire management",
+            "value": 0.04
+          },
+          {
+            "key": "historical_form",
+            "label": "Historical form at this circuit",
+            "value": 0.0106
+          },
+          {
+            "key": "pit_stops",
+            "label": "Pit stops",
+            "value": -0.025
+          }
+        ]
+      }
+    },
+    {
+      "position": 18,
+      "driver": "OCO",
+      "team": "Haas F1 Team",
+      "win_pct": 0.1,
+      "podium_pct": 0.6,
+      "points_pct": 11.7,
+      "expected_position": 16.1,
+      "contributions": {
+        "base_score": 0.4135,
+        "terms": [
+          {
+            "key": "quali_pace",
+            "label": "Quali pace",
+            "value": 0.125
+          },
+          {
+            "key": "season_form",
+            "label": "Season form (championship points)",
+            "value": 0.195
+          },
+          {
+            "key": "grid_position",
+            "label": "Grid position",
+            "value": 0.0031
+          },
+          {
+            "key": "top_speed",
+            "label": "Top speed",
+            "value": 0.0648
+          },
+          {
+            "key": "tire_management",
+            "label": "Tire management",
+            "value": 0.04
+          },
+          {
+            "key": "historical_form",
+            "label": "Historical form at this circuit",
+            "value": 0.0106
+          },
+          {
+            "key": "pit_stops",
+            "label": "Pit stops",
+            "value": -0.025
+          }
+        ]
+      }
+    },
+    {
+      "position": 19,
+      "driver": "TSU",
+      "team": "RB F1 Team",
+      "win_pct": 0.0,
+      "podium_pct": 0.4,
+      "points_pct": 7.7,
+      "expected_position": 17.08,
+      "contributions": {
+        "base_score": 0.3622,
+        "terms": [
+          {
+            "key": "quali_pace",
+            "label": "Quali pace",
+            "value": 0.125
+          },
+          {
+            "key": "season_form",
+            "label": "Season form (championship points)",
+            "value": 0.1418
+          },
+          {
+            "key": "grid_position",
+            "label": "Grid position",
+            "value": 0.005
+          },
+          {
+            "key": "top_speed",
+            "label": "Top speed",
+            "value": 0.0648
+          },
+          {
+            "key": "tire_management",
+            "label": "Tire management",
+            "value": 0.04
+          },
+          {
+            "key": "historical_form",
+            "label": "Historical form at this circuit",
+            "value": 0.0106
+          },
+          {
+            "key": "pit_stops",
+            "label": "Pit stops",
+            "value": -0.025
+          }
+        ]
+      }
+    },
+    {
+      "position": 20,
+      "driver": "PER",
+      "team": "Cadillac F1 Team",
+      "win_pct": 0.0,
+      "podium_pct": 0.2,
+      "points_pct": 4.4,
+      "expected_position": 18.29,
+      "contributions": {
+        "base_score": 0.2891,
+        "terms": [
+          {
+            "key": "quali_pace",
+            "label": "Quali pace",
+            "value": 0.125
+          },
+          {
+            "key": "season_form",
+            "label": "Season form (championship points)",
+            "value": 0.0709
+          },
+          {
+            "key": "grid_position",
+            "label": "Grid position",
+            "value": 0.0028
+          },
+          {
+            "key": "top_speed",
+            "label": "Top speed",
+            "value": 0.0648
+          },
+          {
+            "key": "tire_management",
+            "label": "Tire management",
+            "value": 0.04
+          },
+          {
+            "key": "historical_form",
+            "label": "Historical form at this circuit",
+            "value": 0.0106
+          },
+          {
+            "key": "pit_stops",
+            "label": "Pit stops",
+            "value": -0.025
+          }
+        ]
+      }
+    },
+    {
+      "position": 21,
+      "driver": "STR",
+      "team": "Aston Martin",
+      "win_pct": 0.0,
+      "podium_pct": 0.2,
+      "points_pct": 4.2,
+      "expected_position": 18.3,
+      "contributions": {
+        "base_score": 0.2888,
+        "terms": [
+          {
+            "key": "quali_pace",
+            "label": "Quali pace",
+            "value": 0.125
+          },
+          {
+            "key": "season_form",
+            "label": "Season form (championship points)",
+            "value": 0.0709
+          },
+          {
+            "key": "grid_position",
+            "label": "Grid position",
+            "value": 0.0025
+          },
+          {
+            "key": "top_speed",
+            "label": "Top speed",
+            "value": 0.0648
+          },
+          {
+            "key": "tire_management",
+            "label": "Tire management",
+            "value": 0.04
+          },
+          {
+            "key": "historical_form",
+            "label": "Historical form at this circuit",
+            "value": 0.0106
+          },
+          {
+            "key": "pit_stops",
+            "label": "Pit stops",
+            "value": -0.025
+          }
+        ]
+      }
+    },
+    {
+      "position": 22,
+      "driver": "BOT",
+      "team": "Cadillac F1 Team",
+      "win_pct": 0.0,
+      "podium_pct": 0.2,
+      "points_pct": 4.4,
+      "expected_position": 18.29,
+      "contributions": {
+        "base_score": 0.2889,
+        "terms": [
+          {
+            "key": "quali_pace",
+            "label": "Quali pace",
+            "value": 0.125
+          },
+          {
+            "key": "season_form",
+            "label": "Season form (championship points)",
+            "value": 0.0709
+          },
+          {
+            "key": "grid_position",
+            "label": "Grid position",
+            "value": 0.0026
+          },
+          {
+            "key": "top_speed",
+            "label": "Top speed",
+            "value": 0.0648
+          },
+          {
+            "key": "tire_management",
+            "label": "Tire management",
+            "value": 0.04
+          },
+          {
+            "key": "historical_form",
+            "label": "Historical form at this circuit",
+            "value": 0.0106
           },
           {
             "key": "pit_stops",
