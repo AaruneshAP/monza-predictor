@@ -3,6 +3,7 @@
 import { Fragment, useState } from "react";
 import { BarChart, Bar, ErrorBar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import type { Contributions, RaceFile } from "../lib/data";
+import { formatBrier } from "../lib/format";
 import { teamColor } from "../lib/teamColors";
 import RaceCountdown from "./RaceCountdown";
 import { getCircuitFacts } from "../lib/circuitFacts";
@@ -156,7 +157,7 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
             </div>
             <div>
               <p className="text-neutral-500 text-xs mb-1">Brier score (win)</p>
-              <p className="font-medium">{race.accuracy.brier_score_win}</p>
+              <p className="font-medium">{formatBrier(race.accuracy.brier_score_win)}</p>
             </div>
           </div>
           <p className="text-neutral-500 text-xs">
@@ -170,9 +171,9 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
           {race.accuracy.baseline && (
             <p className="text-xs mt-2">
               <span className="text-neutral-400">
-                Our model: <span className="font-medium text-neutral-200">{race.accuracy.brier_score_win}</span>
+                Our model: <span className="font-medium text-neutral-200">{formatBrier(race.accuracy.brier_score_win)}</span>
                 {" · "}
-                Grid-based baseline (always pick the polesitter): <span className="font-medium text-neutral-200">{race.accuracy.baseline.brier_score_win}</span>
+                Grid-based baseline (always pick the polesitter): <span className="font-medium text-neutral-200">{formatBrier(race.accuracy.baseline.brier_score_win)}</span>
               </span>{" "}
               <span
                 className={
