@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "updated_at": "2026-09-08T11:00:19.717690+00:00",
+  "updated_at": "2026-09-08T11:20:33.306983+00:00",
   "races": [
     {
       "round": 1,
@@ -170,6 +170,7 @@
     "winner_hit_rate_pct": 25.0,
     "avg_brier_score_win": 0.0426,
     "avg_mean_abs_position_error": 3.44,
-    "avg_podium_hits": 1.25
+    "avg_podium_hits": 1.25,
+    "avg_baseline_brier_score_win": 0.0227
   }
 }
