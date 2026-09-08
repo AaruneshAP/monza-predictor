@@ -30,12 +30,14 @@ export default function Nav() {
             </Link>
           ))}
         </div>
-        <Link
-          href="/track-record"
-          className="ml-auto shrink-0 text-neutral-400 hover:text-accent whitespace-nowrap"
-        >
-          Track Record
-        </Link>
+        <div className="ml-auto flex items-center gap-4 shrink-0">
+          <Link href="/track-record" className="text-neutral-400 hover:text-accent whitespace-nowrap">
+            Track Record
+          </Link>
+          <Link href="/about" className="text-neutral-400 hover:text-accent whitespace-nowrap">
+            About
+          </Link>
+        </div>
       </div>
     </nav>
   );
