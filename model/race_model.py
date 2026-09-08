@@ -29,9 +29,11 @@ season-form rounds at or after it). This is what makes the "predicted vs
 actual" track record honest — it's not hindsight-informed.
 """
 
+import json
 import os
 import warnings
 from datetime import datetime, timezone
+from pathlib import Path
 
 import fastf1
 import numpy as np
@@ -650,33 +652,103 @@ def build_features(raw: dict) -> pd.DataFrame:
 # ---------------------------------------------------------------
 
 
-def weight_profile_for(profile: dict) -> dict:
+#  Every term below is HAND_TUNED_WEIGHTS's own formula multiplied by a
+# calibration scalar (default 1.0 = unchanged) — this is what
+# fit_weights.py fits per term against the graded/backtested rounds in
+# the track record, storing the result in fitted_weights.json. The
+# circuit-conditional *shape* of grid/top-speed/tire weight (how much a
+# high-overtaking-difficulty circuit should weight grid position, say)
+# stays hand-tuned: fitting that shape properly would need many graded
+# races AT THE SAME circuit, and the track record so far has at most one
+# graded race per circuit — nowhere near enough. What's fit instead is
+# each term's overall scale: was 0.25 the right amount of weight for
+# quali pace across the board, or should it have been more/less? See
+# DEBUGGING.md for which entry covers this and from how much data.
+HAND_TUNED_WEIGHTS = {
+    "quali_weight": 0.25,
+    "points_weight": 0.26,
+    "grid_weight_base": 0.05,
+    "grid_weight_overtaking_coef": 0.25,
+    "top_speed_weight_base": 0.05,
+    "top_speed_weight_downforce_coef": 0.20,
+    "tire_deg_weight_base": 0.02,
+    "tire_deg_weight_tire_coef": 0.12,
+    "historical_weight": 0.10,
+    "pit_weight": 0.05,
+}
+
+DEFAULT_CALIBRATION = {
+    "quali_weight": 1.0,
+    "points_weight": 1.0,
+    "grid_weight": 1.0,
+    "top_speed_weight": 1.0,
+    "tire_deg_weight": 1.0,
+    "historical_weight": 1.0,
+    "pit_weight": 1.0,
+}
+
+FITTED_WEIGHTS_PATH = Path(__file__).parent / "fitted_weights.json"
+
+
+def _load_calibration() -> dict:
+    """The per-term calibration scalars fit_weights.py last fit, or all
+    1.0 (the hand-tuned formulas, unchanged) if it's never been run."""
+    if FITTED_WEIGHTS_PATH.exists():
+        try:
+            fitted = json.loads(FITTED_WEIGHTS_PATH.read_text())
+            calibration = dict(DEFAULT_CALIBRATION)
+            calibration.update(fitted.get("calibration", {}))
+            return calibration
+        except (json.JSONDecodeError, OSError):
+            pass
+    return dict(DEFAULT_CALIBRATION)
+
+
+def weight_profile_for(profile: dict, calibration: dict | None = None) -> dict:
     """Translates a circuit's 0-1 profile scores into concrete Monte Carlo
     weights. Anchored so that plugging in Monza's own profile
     (overtaking=0.15, downforce=0.05, tire=0.15) reproduces close to the
-    weights that were hand-tuned specifically for Monza in the original
+    weights that were originally hand-tuned specifically for Monza in the
     single-track version of this model — i.e. this generalization isn't
     an untested guess, it's checked to collapse back to known-reasonable
     numbers at the one circuit this project already validated by hand.
+
+    `calibration`: per-term scalars multiplying HAND_TUNED_WEIGHTS's
+    formulas (see that constant's docstring). Defaults to whatever
+    fit_weights.py last fit (fitted_weights.json), or all-1.0 if it's
+    never been run. Pass DEFAULT_CALIBRATION explicitly to get the pure
+    original hand-tuned weights regardless of any fit on disk — this is
+    what fit_weights.py itself does, so a re-run always fits relative to
+    the documented hand-tuned baseline rather than compounding onto a
+    previous fit.
     """
+    if calibration is None:
+        calibration = _load_calibration()
+    hw = HAND_TUNED_WEIGHTS
     overtaking = profile["overtaking_difficulty"]
     downforce = profile["downforce_level"]
     tire = profile["tire_severity"]
 
-    grid_weight = 0.05 + overtaking * 0.25  # 0.0875 at Monza, up to 0.30 at Monaco
-    top_speed_weight_dry = 0.05 + (1 - downforce) * 0.20  # 0.24 at Monza, down to 0.06 at Monaco
-    tire_deg_weight = 0.02 + tire * 0.12  # 0.038 at Monza, up to ~0.12 at Qatar
-    slipstream_coefficient = 0.01 + (1 - downforce) * 0.03  # 0.0385 at Monza
+    grid_weight = (
+        hw["grid_weight_base"] + overtaking * hw["grid_weight_overtaking_coef"]
+    ) * calibration["grid_weight"]
+    top_speed_weight_dry = (
+        hw["top_speed_weight_base"] + (1 - downforce) * hw["top_speed_weight_downforce_coef"]
+    ) * calibration["top_speed_weight"]
+    tire_deg_weight = (hw["tire_deg_weight_base"] + tire * hw["tire_deg_weight_tire_coef"]) * calibration[
+        "tire_deg_weight"
+    ]
+    slipstream_coefficient = 0.01 + (1 - downforce) * 0.03  # 0.0385 at Monza — not a base_score term, not fit
 
     return {
-        "quali_weight": 0.25,
-        "points_weight": 0.26,
+        "quali_weight": hw["quali_weight"] * calibration["quali_weight"],
+        "points_weight": hw["points_weight"] * calibration["points_weight"],
         "grid_weight": grid_weight,
         "top_speed_weight_dry": top_speed_weight_dry,
         "top_speed_weight_wet": top_speed_weight_dry * 0.25,
         "tire_deg_weight": tire_deg_weight,
-        "historical_weight": 0.10,
-        "pit_weight": 0.05,
+        "historical_weight": hw["historical_weight"] * calibration["historical_weight"],
+        "pit_weight": hw["pit_weight"] * calibration["pit_weight"],
         "slipstream_coefficient": slipstream_coefficient,
     }
 
@@ -716,7 +788,9 @@ def _base_score_terms(row, w: dict, top_speed_weight: float) -> dict[str, float]
     }
 
 
-def compute_contributions(features: pd.DataFrame, profile: dict, rain_probability: float = 0.10) -> dict[str, dict]:
+def compute_contributions(
+    features: pd.DataFrame, profile: dict, rain_probability: float = 0.10, calibration: dict | None = None
+) -> dict[str, dict]:
     """Per-driver breakdown of the deterministic terms behind their base
     race-pace score, keyed by driver — this is an exact decomposition of
     what monte_carlo_simulate() actually adds up, not a post-hoc estimate
@@ -732,8 +806,13 @@ def compute_contributions(features: pd.DataFrame, profile: dict, rain_probabilit
     simulation depending on that simulation's own rain draw) — this is
     the same expected weight in aggregate, without pretending a single
     number is either the "dry" or the "wet" contribution.
+
+    `calibration`: forwarded to weight_profile_for() — see its docstring.
+    fit_weights.py passes DEFAULT_CALIBRATION explicitly to compute terms
+    against the pure hand-tuned baseline regardless of any fit already on
+    disk; every other caller leaves this as None (whatever's fitted).
     """
-    w = weight_profile_for(profile)
+    w = weight_profile_for(profile, calibration=calibration)
     effective_top_speed_weight = (
         (1 - rain_probability) * w["top_speed_weight_dry"] + rain_probability * w["top_speed_weight_wet"]
     )
