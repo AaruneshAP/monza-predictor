@@ -7,6 +7,8 @@ import { formatBrier } from "../lib/format";
 import { teamColor } from "../lib/teamColors";
 import RaceCountdown from "./RaceCountdown";
 import { getCircuitFacts } from "../lib/circuitFacts";
+import PredictedVsActualChart from "./PredictedVsActualChart";
+import StartingGridLadder from "./StartingGridLadder";
 
 // Fixed locale + UTC timezone so the server-prerendered HTML and the
 // client hydration pass render byte-identical text — a viewer-local
@@ -80,6 +82,7 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
     for (const row of race.actual.classification) actualByDriver[row.driver] = row.position;
   }
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
+  const [winProbView, setWinProbView] = useState<"bars" | "grid">("bars");
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-16">
@@ -209,36 +212,67 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
               </ul>
             </div>
           )}
+          <PredictedVsActualChart predicted={race.predicted} actual={race.actual.classification} />
         </section>
       )}
 
       {/* Chart */}
       <section className="mb-14">
-        <h2 className="text-lg font-semibold mb-4">Win Probability — Top 10</h2>
-        <div className="h-[420px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={top10} layout="vertical" margin={{ left: 40 }}>
-              <XAxis type="number" unit="%" stroke="#666" />
-              <YAxis type="category" dataKey="driver" stroke="#666" width={80} interval={0} />
-              <Tooltip
-                contentStyle={{ background: "#111", border: "1px solid #333" }}
-                formatter={(value: number, name: string, props: { payload?: { win_pct_stdev?: number | null } }) => {
-                  if (name !== "win_pct") return [value, name];
-                  const stdev = props.payload?.win_pct_stdev;
-                  return [stdev ? `${value}% ± ${stdev}%` : `${value}%`, "Win probability"];
-                }}
-              />
-              <Bar dataKey="win_pct" fill="#00D2BE" radius={[0, 4, 4, 0]}>
-                <ErrorBar dataKey="errorValue" width={4} strokeWidth={1.5} stroke="#f5f5f5" opacity={0.5} />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <h2 className="text-lg font-semibold">Win Probability — Top 10</h2>
+          <div className="flex rounded-md border border-neutral-800 overflow-hidden text-xs">
+            <button
+              type="button"
+              onClick={() => setWinProbView("bars")}
+              className={`px-3 py-1.5 ${winProbView === "bars" ? "bg-neutral-800 text-neutral-100" : "text-neutral-500 hover:text-neutral-300"}`}
+            >
+              Bars
+            </button>
+            <button
+              type="button"
+              onClick={() => setWinProbView("grid")}
+              className={`px-3 py-1.5 ${winProbView === "grid" ? "bg-neutral-800 text-neutral-100" : "text-neutral-500 hover:text-neutral-300"}`}
+            >
+              Starting grid
+            </button>
+          </div>
         </div>
-        <p className="text-neutral-400 text-sm mt-2">
-          Error bars show ± 1 standard deviation of win probability across batches of the Monte
-          Carlo simulation — how much this estimate would wobble on a re-run, not a formal
-          confidence interval.
-        </p>
+        {winProbView === "bars" ? (
+          <>
+            <div className="h-[420px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={top10} layout="vertical" margin={{ left: 40 }}>
+                  <XAxis type="number" unit="%" stroke="#666" />
+                  <YAxis type="category" dataKey="driver" stroke="#666" width={80} interval={0} />
+                  <Tooltip
+                    contentStyle={{ background: "#111", border: "1px solid #333" }}
+                    formatter={(value: number, name: string, props: { payload?: { win_pct_stdev?: number | null } }) => {
+                      if (name !== "win_pct") return [value, name];
+                      const stdev = props.payload?.win_pct_stdev;
+                      return [stdev ? `${value}% ± ${stdev}%` : `${value}%`, "Win probability"];
+                    }}
+                  />
+                  <Bar dataKey="win_pct" fill="#00D2BE" radius={[0, 4, 4, 0]}>
+                    <ErrorBar dataKey="errorValue" width={4} strokeWidth={1.5} stroke="#f5f5f5" opacity={0.5} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <p className="text-neutral-400 text-sm mt-2">
+              Error bars show ± 1 standard deviation of win probability across batches of the Monte
+              Carlo simulation — how much this estimate would wobble on a re-run, not a formal
+              confidence interval.
+            </p>
+          </>
+        ) : (
+          <>
+            <StartingGridLadder predicted={race.predicted} />
+            <p className="text-neutral-400 text-sm mt-4">
+              Arranged like a real starting grid — highest win probability at P1, each block colored
+              by team and glowing brighter the more likely that driver is to win.
+            </p>
+          </>
+        )}
       </section>
 
       {/* Table */}
