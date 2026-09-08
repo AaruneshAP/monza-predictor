@@ -202,7 +202,18 @@ def _apply(races: list[dict]) -> None:
     automatically) and re-grades them — the real before/after comparison,
     not the proxy one. Still backtest=True throughout: this changes which
     weights score the same pre-race-only data, not what data is used, so
-    it's not hindsight."""
+    it's not hindsight.
+
+    Each round's regeneration re-fetches from FastF1 from scratch (not
+    reused from _training_races()'s own fetch), and FastF1's public API
+    caps at 500 calls/hour — comfortably exceeded by pulling several
+    rounds' worth of multi-year historical data twice in one run (once
+    to fit, once here to apply). A round that hits the cap (or any other
+    fetch failure) is skipped rather than left to crash the whole script
+    and lose the calibration this function was called to apply — that's
+    already written to fitted_weights.json by the time this runs, and is
+    worth keeping even if this run can't finish regenerating every round.
+    """
     import subprocess
     import sys
 
@@ -211,14 +222,32 @@ def _apply(races: list[dict]) -> None:
     before = archive.compute_track_record()
 
     print("\nRegenerating each graded round's backtest with the fitted weights...")
+    regenerated = []
     for race in races:
-        generate_predictions.generate(race["round"], backtest=True, force=True)
+        try:
+            generate_predictions.generate(race["round"], backtest=True, force=True)
+        except Exception as exc:
+            print(f"  round {race['round']} ({race['event_name']}): skipping regeneration ({exc})")
+            continue
+        regenerated.append(race)
         print(f"  round {race['round']} ({race['event_name']}): regenerated")
+
+    if not regenerated:
+        print(
+            "\nCouldn't regenerate any round this run (see skips above) — fitted_weights.json is still "
+            "written with the new calibration, but there's no real before/after comparison from this run. "
+            "Re-run with --apply once the underlying fetch failures clear (e.g. an hour, for FastF1's "
+            "rate limit) to get one."
+        )
+        return
 
     print("\nRe-grading against the real results...")
     subprocess.run([sys.executable, "check_results.py", "--regrade"], check=True, cwd=Path(__file__).parent)
 
     after = archive.compute_track_record()
+    if len(regenerated) < len(races):
+        skipped = [r["round"] for r in races if r not in regenerated]
+        print(f"\nNote: only {len(regenerated)}/{len(races)} rounds regenerated this run (skipped: {skipped}) — the comparison below reflects that partial set, not the full training sample.")
     print(f"\nReal Brier score — before: {before['avg_brier_score_win']}  →  after: {after['avg_brier_score_win']}")
     print(f"Baseline (always-pick-polesitter) Brier for comparison: {after['avg_baseline_brier_score_win']}")
 
