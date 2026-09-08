@@ -7,6 +7,7 @@ import { formatBrier } from "../lib/format";
 import { teamColor } from "../lib/teamColors";
 import RaceCountdown from "./RaceCountdown";
 import { getCircuitFacts } from "../lib/circuitFacts";
+import PredictedVsActualChart from "./PredictedVsActualChart";
 
 // Fixed locale + UTC timezone so the server-prerendered HTML and the
 // client hydration pass render byte-identical text — a viewer-local
@@ -209,6 +210,7 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
               </ul>
             </div>
           )}
+          <PredictedVsActualChart predicted={race.predicted} actual={race.actual.classification} />
         </section>
       )}
 
