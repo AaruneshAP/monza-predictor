@@ -24,12 +24,20 @@ export default function StartingGridLadder({ predicted }: { predicted: Predictio
         // ahead of the right (even-position) car in every row, down the
         // whole grid — not alternated row to row. Only applied at the
         // sm: breakpoint and up, where the two-column layout exists.
+        //
+        // Uses margin-top, not a transform: a transform shifts the box
+        // visually without adding to its layout size, so the grid
+        // container's own height came out too short and the last
+        // staggered block overlapped whatever content followed it below
+        // (confirmed live — the last row's right-column block covered
+        // the caption text under it). Margin pushes the box down AND
+        // grows the row (and so the container) to actually contain it.
         const isRightColumn = i % 2 === 1;
         const glowStrength = row.win_pct / maxWinPct; // 0-1, brightest for the model's pick
         return (
           <div
             key={row.driver}
-            className={`rounded-md border p-3 ${isRightColumn ? "sm:translate-y-6" : ""}`}
+            className={`rounded-md border p-3 ${isRightColumn ? "sm:mt-6" : ""}`}
             style={{
               borderColor: color,
               background: `linear-gradient(135deg, rgba(${rgb}, 0.22), rgba(${rgb}, 0.05))`,
