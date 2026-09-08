@@ -681,6 +681,76 @@ def weight_profile_for(profile: dict) -> dict:
     }
 
 
+# Stable keys for each score term, paired with the driver-facing label the
+# frontend renders — one place both compute_contributions() and anything
+# that needs to talk about a term by name draw from, so a label can't
+# silently drift out of sync with the term it's supposed to describe.
+SCORE_TERM_LABELS = {
+    "quali_pace": "Quali pace",
+    "season_form": "Season form (championship points)",
+    "grid_position": "Grid position",
+    "top_speed": "Top speed",
+    "tire_management": "Tire management",
+    "historical_form": "Historical form at this circuit",
+    "pit_stops": "Pit stops",
+}
+
+
+def _base_score_terms(row, w: dict, top_speed_weight: float) -> dict[str, float]:
+    """The deterministic terms that sum to a driver's base race-pace
+    score, before Monte Carlo noise is added — monte_carlo_simulate()'s
+    sim_scores start here every simulation. This is also, unmodified, the
+    per-driver "what drove this prediction" breakdown shown in the UI
+    (see compute_contributions()): both read the *same* terms, so the
+    displayed breakdown can never drift from what the simulation actually
+    used to reach its numbers.
+    """
+    return {
+        "quali_pace": row.quali_pace_pctile * w["quali_weight"],
+        "season_form": row.season_points_pctile * w["points_weight"],
+        "grid_position": (1 / max(row.grid_pos, 1)) * w["grid_weight"],
+        "top_speed": row.top_speed_rank * top_speed_weight,
+        "tire_management": (1 - row.tire_deg_factor) * w["tire_deg_weight"],
+        "historical_form": (1 - row.historical_avg_finish / 20) * w["historical_weight"],
+        "pit_stops": -row.pit_delta * w["pit_weight"],
+    }
+
+
+def compute_contributions(features: pd.DataFrame, profile: dict, rain_probability: float = 0.10) -> dict[str, dict]:
+    """Per-driver breakdown of the deterministic terms behind their base
+    race-pace score, keyed by driver — this is an exact decomposition of
+    what monte_carlo_simulate() actually adds up, not a post-hoc estimate
+    of a black box. There is deliberately no attempt to attribute a share
+    of *win%* to each term: win% is the output of 100,000 noisy
+    simulations and a field-wide ranking, not a linear function of these
+    terms, so a term-to-win%-share number would be fabricated precision
+    this model doesn't have. Score contribution is the honest thing to
+    show.
+
+    top_speed's weight is the rain_probability-weighted average of the
+    dry/wet weights (monte_carlo_simulate() picks one or the other per
+    simulation depending on that simulation's own rain draw) — this is
+    the same expected weight in aggregate, without pretending a single
+    number is either the "dry" or the "wet" contribution.
+    """
+    w = weight_profile_for(profile)
+    effective_top_speed_weight = (
+        (1 - rain_probability) * w["top_speed_weight_dry"] + rain_probability * w["top_speed_weight_wet"]
+    )
+
+    contributions = {}
+    for row in features.itertuples():
+        terms = _base_score_terms(row, w, effective_top_speed_weight)
+        contributions[row.driver] = {
+            "base_score": round(sum(terms.values()), 4),
+            "terms": [
+                {"key": key, "label": SCORE_TERM_LABELS[key], "value": round(value, 4)}
+                for key, value in terms.items()
+            ],
+        }
+    return contributions
+
+
 def monte_carlo_simulate(
     features: pd.DataFrame,
     profile: dict,
@@ -723,15 +793,7 @@ def monte_carlo_simulate(
         sim_scores = {}
 
         for row in features.itertuples():
-            base_score = (
-                row.quali_pace_pctile * w["quali_weight"]
-                + row.season_points_pctile * w["points_weight"]
-                + (1 / max(row.grid_pos, 1)) * w["grid_weight"]
-                + row.top_speed_rank * top_speed_weight
-                + (1 - row.tire_deg_factor) * w["tire_deg_weight"]
-                + (1 - row.historical_avg_finish / 20) * w["historical_weight"]
-                - row.pit_delta * w["pit_weight"]
-            )
+            base_score = sum(_base_score_terms(row, w, top_speed_weight).values())
             noise_scale = 0.18 + row.slipstream_factor * w["slipstream_coefficient"]
             if is_rain:
                 noise_scale *= 1.8  # wet races are less predictable

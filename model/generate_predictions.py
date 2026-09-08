@@ -27,7 +27,13 @@ from pathlib import Path
 import fastf1
 
 import archive
-from race_model import SEASON_YEAR, build_features, load_race_context, monte_carlo_simulate
+from race_model import (
+    SEASON_YEAR,
+    build_features,
+    compute_contributions,
+    load_race_context,
+    monte_carlo_simulate,
+)
 from circuit_profiles import CIRCUIT_PROFILES
 
 
@@ -89,6 +95,7 @@ def generate(round_number: int, backtest: bool = False, force: bool = False) -> 
     predictions = monte_carlo_simulate(
         features, raw["profile"], n_sims=100_000, rain_probability=raw["rain_probability"]
     )
+    contributions = compute_contributions(features, raw["profile"], rain_probability=raw["rain_probability"])
 
     payload = {
         "year": SEASON_YEAR,
@@ -117,6 +124,7 @@ def generate(round_number: int, backtest: bool = False, force: bool = False) -> 
                 "podium_pct": row["podium_pct"],
                 "points_pct": row["points_pct"],
                 "expected_position": row["expected_position"],
+                "contributions": contributions.get(row["driver"]),
             }
             for i, row in enumerate(predictions.to_dict(orient="records"))
         ],

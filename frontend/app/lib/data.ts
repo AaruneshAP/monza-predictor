@@ -3,6 +3,17 @@ import path from "path";
 
 const PREDICTIONS_DIR = path.join(process.cwd(), "public", "predictions");
 
+export type ContributionTerm = {
+  key: string;
+  label: string;
+  value: number;
+};
+
+export type Contributions = {
+  base_score: number;
+  terms: ContributionTerm[];
+};
+
 export type PredictionRow = {
   position: number;
   driver: string;
@@ -11,6 +22,8 @@ export type PredictionRow = {
   podium_pct: number;
   points_pct: number;
   expected_position: number;
+  // Absent on a race predicted before this field existed.
+  contributions?: Contributions | null;
 };
 
 export type ActualRow = {

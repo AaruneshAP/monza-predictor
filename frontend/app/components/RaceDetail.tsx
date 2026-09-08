@@ -1,7 +1,8 @@
 "use client";
 
+import { Fragment, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import type { RaceFile } from "../lib/data";
+import type { Contributions, RaceFile } from "../lib/data";
 
 // Fixed locale + UTC timezone so the server-prerendered HTML and the
 // client hydration pass render byte-identical text — a viewer-local
@@ -24,6 +25,45 @@ function levelLabel(score: number): string {
   return "High";
 }
 
+function ContributionBreakdown({ contributions }: { contributions: Contributions }) {
+  const maxAbs = Math.max(...contributions.terms.map((t) => Math.abs(t.value)), 0.0001);
+  return (
+    <div className="py-4 px-4 sm:px-8">
+      <p className="text-neutral-500 text-xs mb-3 max-w-xl">
+        What drove this driver&apos;s race-pace score —{" "}
+        <span className="text-neutral-300 font-medium">{contributions.base_score.toFixed(3)}</span>{" "}
+        total, before the model&apos;s per-simulation randomness is added. This is not a breakdown of
+        win% itself — win% comes out of 100,000 noisy simulations ranked against the whole field, not a
+        straight sum of these terms — but it is the exact set of terms that sum to the score those
+        simulations start from.
+      </p>
+      <div className="space-y-1.5 max-w-xl">
+        {contributions.terms.map((term) => {
+          const widthPct = (Math.abs(term.value) / maxAbs) * 100;
+          const positive = term.value >= 0;
+          return (
+            <div key={term.key} className="flex items-center gap-3 text-xs">
+              <span className="w-44 shrink-0 text-neutral-400">{term.label}</span>
+              <div className="flex-1 h-3 bg-neutral-900 rounded-sm overflow-hidden">
+                <div
+                  className={`h-full rounded-sm ${positive ? "bg-accent" : "bg-red-500/70"}`}
+                  style={{ width: `${widthPct}%` }}
+                />
+              </div>
+              <span
+                className={`w-16 shrink-0 text-right font-mono ${positive ? "text-neutral-300" : "text-red-400"}`}
+              >
+                {positive ? "+" : ""}
+                {term.value.toFixed(3)}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function RaceDetail({ race }: { race: RaceFile }) {
   const top10 = race.predicted.slice(0, 10);
   const profile = race.circuit_profile;
@@ -31,6 +71,7 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
   if (race.actual) {
     for (const row of race.actual.classification) actualByDriver[row.driver] = row.position;
   }
+  const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-16">
@@ -163,7 +204,10 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
 
       {/* Table */}
       <section className="mb-14">
-        <h2 className="text-lg font-semibold mb-4">Full Prediction Table</h2>
+        <h2 className="text-lg font-semibold mb-1">Full Prediction Table</h2>
+        <p className="text-neutral-600 text-xs mb-4">
+          Click a row to see what drove that driver&apos;s score.
+        </p>
         <div className="overflow-x-auto rounded-lg border border-neutral-800">
           <table className="w-full text-sm text-left">
             <thead className="bg-neutral-900 text-neutral-400">
@@ -179,22 +223,48 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
               </tr>
             </thead>
             <tbody>
-              {race.predicted.map((row) => (
-                <tr key={row.driver} className="border-t border-neutral-800">
-                  <td className="px-4 py-3">{row.position}</td>
-                  <td className="px-4 py-3 font-medium">{row.driver}</td>
-                  <td className="px-4 py-3 text-neutral-400">{row.team}</td>
-                  <td className="px-4 py-3">{row.win_pct}%</td>
-                  <td className="px-4 py-3">{row.podium_pct}%</td>
-                  <td className="px-4 py-3">{row.points_pct}%</td>
-                  <td className="px-4 py-3">{row.expected_position}</td>
-                  {race.status === "completed" && (
-                    <td className="px-4 py-3 text-neutral-400">
-                      {actualByDriver[row.driver] ?? "—"}
-                    </td>
-                  )}
-                </tr>
-              ))}
+              {race.predicted.map((row) => {
+                const isExpandable = !!row.contributions;
+                const isExpanded = expandedDriver === row.driver;
+                const columnCount = race.status === "completed" ? 8 : 7;
+                return (
+                  <Fragment key={row.driver}>
+                    <tr
+                      onClick={() => isExpandable && setExpandedDriver(isExpanded ? null : row.driver)}
+                      className={`border-t border-neutral-800 ${
+                        isExpandable ? "cursor-pointer hover:bg-neutral-900/60" : ""
+                      }`}
+                    >
+                      <td className="px-4 py-3">{row.position}</td>
+                      <td className="px-4 py-3 font-medium">
+                        {isExpandable && (
+                          <span className="inline-block w-3 text-neutral-600">
+                            {isExpanded ? "▾" : "▸"}
+                          </span>
+                        )}
+                        {row.driver}
+                      </td>
+                      <td className="px-4 py-3 text-neutral-400">{row.team}</td>
+                      <td className="px-4 py-3">{row.win_pct}%</td>
+                      <td className="px-4 py-3">{row.podium_pct}%</td>
+                      <td className="px-4 py-3">{row.points_pct}%</td>
+                      <td className="px-4 py-3">{row.expected_position}</td>
+                      {race.status === "completed" && (
+                        <td className="px-4 py-3 text-neutral-400">
+                          {actualByDriver[row.driver] ?? "—"}
+                        </td>
+                      )}
+                    </tr>
+                    {isExpanded && row.contributions && (
+                      <tr className="border-t border-neutral-800 bg-neutral-950">
+                        <td colSpan={columnCount} className="p-0">
+                          <ContributionBreakdown contributions={row.contributions} />
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
