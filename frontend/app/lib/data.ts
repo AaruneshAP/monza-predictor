@@ -90,12 +90,22 @@ export type TrackRecord = {
   avg_baseline_brier_score_win: number | null;
 };
 
+export type CalibrationBin = {
+  bin_start: number;
+  bin_end: number;
+  n: number;
+  avg_predicted_win_pct: number;
+  actual_win_rate_pct: number;
+};
+
 export type IndexFile = {
   season: number;
   updated_at: string;
   races: IndexRaceEntry[];
   next_race_slug: string | null;
   track_record: TrackRecord;
+  // Absent on an index.json built before this field existed.
+  calibration_bins?: CalibrationBin[];
 };
 
 export function getIndex(): IndexFile {

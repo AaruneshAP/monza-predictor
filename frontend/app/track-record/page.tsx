@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getIndex, getRace } from "../lib/data";
+import CalibrationChart from "../components/CalibrationChart";
 
 export const metadata = {
   title: "Track Record — F1 Race Predictor",
@@ -9,6 +10,7 @@ export default function TrackRecordPage() {
   const index = getIndex();
   const completed = index.races.filter((r) => r.status === "completed").map((r) => getRace(r.slug));
   const tr = index.track_record;
+  const calibrationBins = index.calibration_bins ?? [];
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-16">
@@ -96,6 +98,33 @@ export default function TrackRecordPage() {
               </table>
             </div>
           </section>
+
+          {calibrationBins.length > 0 && (
+            <section className="mb-14">
+              <h2 className="text-lg font-semibold mb-2">Calibration</h2>
+              <p className="text-neutral-400 text-sm max-w-2xl mb-4">
+                Every driver-race win% prediction across every graded race, bucketed by
+                predicted win% and plotted against how often drivers in that bucket
+                actually won. The dashed line is perfect calibration — a point on it
+                means when the model said &quot;X%,&quot; it was right about X% of the
+                time. Points above the line mean the model was underconfident in that
+                range; below means overconfident. Bubble size shows how many
+                predictions fed that point — small bubbles are a handful of races and
+                should be read as noisy, not as a verdict.
+              </p>
+              <CalibrationChart bins={calibrationBins} />
+              <p className="text-neutral-600 text-xs mt-3">
+                Calibration matters more than raw accuracy for a model that reports a
+                probability rather than a single guess: a model can pick the wrong
+                winner every time and still be well-calibrated (if the driver it gave
+                20% to wins about 1 time in 5), and it can pick the right winner
+                often while being badly calibrated (if everything it&apos;s confident
+                about is systematically over- or under-stated). Accuracy asks &quot;did
+                it guess right&quot; — calibration asks &quot;can you trust the number
+                it gave you.&quot;
+              </p>
+            </section>
+          )}
         </>
       )}
 
