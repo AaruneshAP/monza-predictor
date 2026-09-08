@@ -1,8 +1,11 @@
 "use client";
 
 import { Fragment, useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, ErrorBar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import type { Contributions, RaceFile } from "../lib/data";
+import { teamColor } from "../lib/teamColors";
+import RaceCountdown from "./RaceCountdown";
+import { getCircuitFacts } from "../lib/circuitFacts";
 
 // Fixed locale + UTC timezone so the server-prerendered HTML and the
 // client hydration pass render byte-identical text — a viewer-local
@@ -65,8 +68,12 @@ function ContributionBreakdown({ contributions }: { contributions: Contributions
 }
 
 export default function RaceDetail({ race }: { race: RaceFile }) {
-  const top10 = race.predicted.slice(0, 10);
+  // Recharts' ErrorBar needs a plain numeric dataKey — fall back to 0 (no
+  // visible bar) for a race predicted before win_pct_stdev existed rather
+  // than passing it null/undefined.
+  const top10 = race.predicted.slice(0, 10).map((row) => ({ ...row, errorValue: row.win_pct_stdev ?? 0 }));
   const profile = race.circuit_profile;
+  const circuitFacts = getCircuitFacts(race.round);
   const actualByDriver: Record<string, number> = {};
   if (race.actual) {
     for (const row of race.actual.classification) actualByDriver[row.driver] = row.position;
@@ -99,11 +106,28 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
           top-speed data — re-weighted per-circuit for overtaking difficulty,
           downforce level, and tire severity.
         </p>
+        {circuitFacts && (
+          <div className="flex flex-wrap gap-x-6 gap-y-1 mt-4 text-sm">
+            <span>
+              <span className="text-neutral-200 font-medium">{circuitFacts.length_km.toFixed(3)} km</span>{" "}
+              <span className="text-neutral-500">lap length</span>
+            </span>
+            <span>
+              <span className="text-neutral-200 font-medium">{circuitFacts.corners}</span>{" "}
+              <span className="text-neutral-500">corners</span>
+            </span>
+            <span>
+              <span className="text-neutral-200 font-medium">{levelLabel(profile.overtaking_difficulty)}</span>{" "}
+              <span className="text-neutral-500">overtaking difficulty</span>
+            </span>
+          </div>
+        )}
         <p className="text-neutral-600 text-xs mt-3">
           Race date {formatUtcDate(race.race_date)} · generated{" "}
           {formatUtcTimestamp(race.generated_at)} · rain scenario weighted at{" "}
           {race.rain_probability_pct}%
         </p>
+        {race.status !== "completed" && <RaceCountdown raceDate={race.race_date} raceName={race.race_name} />}
       </section>
 
       {/* Actual vs predicted, only once the race has actually happened */}
@@ -195,11 +219,25 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
             <BarChart data={top10} layout="vertical" margin={{ left: 40 }}>
               <XAxis type="number" unit="%" stroke="#666" />
               <YAxis type="category" dataKey="driver" stroke="#666" width={80} interval={0} />
-              <Tooltip contentStyle={{ background: "#111", border: "1px solid #333" }} />
-              <Bar dataKey="win_pct" fill="#00D2BE" radius={[0, 4, 4, 0]} />
+              <Tooltip
+                contentStyle={{ background: "#111", border: "1px solid #333" }}
+                formatter={(value: number, name: string, props: { payload?: { win_pct_stdev?: number | null } }) => {
+                  if (name !== "win_pct") return [value, name];
+                  const stdev = props.payload?.win_pct_stdev;
+                  return [stdev ? `${value}% ± ${stdev}%` : `${value}%`, "Win probability"];
+                }}
+              />
+              <Bar dataKey="win_pct" fill="#00D2BE" radius={[0, 4, 4, 0]}>
+                <ErrorBar dataKey="errorValue" width={4} strokeWidth={1.5} stroke="#f5f5f5" opacity={0.5} />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
+        <p className="text-neutral-600 text-xs mt-2">
+          Error bars show ± 1 standard deviation of win probability across batches of the Monte
+          Carlo simulation — how much this estimate would wobble on a re-run, not a formal
+          confidence interval.
+        </p>
       </section>
 
       {/* Table */}
@@ -208,9 +246,9 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
         <p className="text-neutral-600 text-xs mb-4">
           Click a row to see what drove that driver&apos;s score.
         </p>
-        <div className="overflow-x-auto rounded-lg border border-neutral-800">
+        <div className="overflow-x-auto overflow-y-auto max-h-[70vh] sm:max-h-none sm:overflow-y-visible rounded-lg border border-neutral-800">
           <table className="w-full text-sm text-left">
-            <thead className="bg-neutral-900 text-neutral-400">
+            <thead className="bg-neutral-900 text-neutral-400 sticky top-0 z-[1] sm:static">
               <tr>
                 <th className="px-4 py-3">Pos</th>
                 <th className="px-4 py-3">Driver</th>
@@ -231,9 +269,10 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
                   <Fragment key={row.driver}>
                     <tr
                       onClick={() => isExpandable && setExpandedDriver(isExpanded ? null : row.driver)}
-                      className={`border-t border-neutral-800 ${
+                      className={`border-t border-neutral-800 border-l-[3px] ${
                         isExpandable ? "cursor-pointer hover:bg-neutral-900/60" : ""
                       }`}
+                      style={{ borderLeftColor: teamColor(row.team) }}
                     >
                       <td className="px-4 py-3">{row.position}</td>
                       <td className="px-4 py-3 font-medium">
@@ -244,8 +283,20 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
                         )}
                         {row.driver}
                       </td>
-                      <td className="px-4 py-3 text-neutral-400">{row.team}</td>
-                      <td className="px-4 py-3">{row.win_pct}%</td>
+                      <td className="px-4 py-3 text-neutral-400">
+                        <span
+                          className="inline-block w-2 h-2 rounded-full mr-1.5 align-middle"
+                          style={{ backgroundColor: teamColor(row.team) }}
+                          aria-hidden="true"
+                        />
+                        {row.team}
+                      </td>
+                      <td className="px-4 py-3">
+                        {row.win_pct}%
+                        {row.win_pct_stdev ? (
+                          <span className="text-neutral-500"> ± {row.win_pct_stdev}%</span>
+                        ) : null}
+                      </td>
                       <td className="px-4 py-3">{row.podium_pct}%</td>
                       <td className="px-4 py-3">{row.points_pct}%</td>
                       <td className="px-4 py-3">{row.expected_position}</td>

@@ -19,6 +19,13 @@ export type PredictionRow = {
   driver: string;
   team: string;
   win_pct: number;
+  // Standard deviation of win_pct across N_CONFIDENCE_BATCHES Monte Carlo
+  // batches — this driver's own simulation-estimation noise at this
+  // sample size, not a formal confidence interval. Absent (undefined) on
+  // a race predicted before this field existed; null was never written
+  // but treated the same as absent, matching every other optional field
+  // here.
+  win_pct_stdev?: number | null;
   podium_pct: number;
   points_pct: number;
   expected_position: number;

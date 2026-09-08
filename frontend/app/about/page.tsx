@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "About — F1 Race Predictor",
+  title: "About",
 };
 
 export default function AboutPage() {

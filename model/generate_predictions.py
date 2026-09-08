@@ -128,6 +128,7 @@ def generate(round_number: int, backtest: bool = False, force: bool = False, raw
                 "driver": row["driver"],
                 "team": row.get("team", ""),
                 "win_pct": row["win_pct"],
+                "win_pct_stdev": row.get("win_pct_stdev"),
                 "podium_pct": row["podium_pct"],
                 "points_pct": row["points_pct"],
                 "expected_position": row["expected_position"],
