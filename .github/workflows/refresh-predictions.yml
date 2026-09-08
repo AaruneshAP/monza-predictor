@@ -13,6 +13,15 @@ on:
     - cron: "0 */3 * * *"
   workflow_dispatch:
     inputs:
+      predict:
+        description: >-
+          Regenerate the next upcoming race's prediction even outside the
+          race-weekend gate. For backfilling a schema change (e.g. a new
+          predicted-row field) onto a not-yet-race-week prediction without
+          waiting for the gate to open; not for regular use.
+        required: false
+        type: boolean
+        default: false
       regrade:
         description: >-
           Also re-grade already-completed races (re-fetch their real result,
@@ -42,7 +51,7 @@ jobs:
         run: python should_run_full_refresh.py
 
       - name: Predict the next upcoming race
-        if: steps.check.outputs.should_run == 'true'
+        if: steps.check.outputs.should_run == 'true' || github.event.inputs.predict == 'true'
         working-directory: model
         run: python generate_predictions.py
 
@@ -57,7 +66,7 @@ jobs:
         run: python check_results.py --regrade
 
       - name: Commit updated predictions
-        if: steps.check.outputs.should_run == 'true' || github.event.inputs.regrade == 'true'
+        if: steps.check.outputs.should_run == 'true' || github.event.inputs.regrade == 'true' || github.event.inputs.predict == 'true'
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
