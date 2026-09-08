@@ -34,7 +34,7 @@ function CalibrationTooltip({ active, payload }: TooltipProps<number, string>) {
       <p className="text-neutral-400">
         Predicted ~{point.x.toFixed(1)}% · actual {point.y.toFixed(1)}%
       </p>
-      <p className="text-neutral-600 mt-1">n = {point.n} prediction{point.n === 1 ? "" : "s"}</p>
+      <p className="text-neutral-400 mt-1">n = {point.n} prediction{point.n === 1 ? "" : "s"}</p>
     </div>
   );
 }

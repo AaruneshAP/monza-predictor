@@ -118,7 +118,7 @@ export default function TrackRecordPage() {
                 should be read as noisy, not as a verdict.
               </p>
               <CalibrationChart bins={calibrationBins} />
-              <p className="text-neutral-600 text-xs mt-3">
+              <p className="text-neutral-400 text-xs mt-3">
                 Calibration matters more than raw accuracy for a model that reports a
                 probability rather than a single guess: a model can pick the wrong
                 winner every time and still be well-calibrated (if the driver it gave
@@ -158,7 +158,7 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
     <div className="rounded-lg border border-neutral-800 p-4">
       <p className="text-neutral-500 text-xs mb-1">{label}</p>
       <p className="text-2xl font-semibold">{value}</p>
-      {sub && <p className="text-neutral-600 text-[11px] mt-1">{sub}</p>}
+      {sub && <p className="text-neutral-400 text-xs mt-1">{sub}</p>}
     </div>
   );
 }
