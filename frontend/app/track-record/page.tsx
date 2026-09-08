@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getIndex, getRace } from "../lib/data";
+import { formatBrier } from "../lib/format";
 import CalibrationChart from "../components/CalibrationChart";
 
 export const metadata = {
@@ -36,14 +37,18 @@ export default function TrackRecordPage() {
           <section className="mb-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
             <Stat label="Races scored" value={String(tr.races_scored)} />
             <Stat label="Winner hit rate" value={`${tr.winner_hit_rate_pct}%`} />
-            <Stat label="Avg. Brier score (win)" value={String(tr.avg_brier_score_win)} sub="lower is better" />
+            <Stat
+              label="Avg. Brier score (win)"
+              value={tr.avg_brier_score_win !== null ? formatBrier(tr.avg_brier_score_win) : "—"}
+              sub="lower is better"
+            />
             <Stat label="Avg. podium hits" value={`${tr.avg_podium_hits} / 3`} />
           </section>
 
           {tr.avg_baseline_brier_score_win !== null && (
             <p className="text-neutral-500 text-xs mb-14">
               Grid-based baseline (always pick the polesitter to win) averages{" "}
-              <span className="text-neutral-300 font-medium">{tr.avg_baseline_brier_score_win}</span> Brier
+              <span className="text-neutral-300 font-medium">{formatBrier(tr.avg_baseline_brier_score_win)}</span> Brier
               across the same graded races —{" "}
               {tr.avg_brier_score_win !== null && tr.avg_brier_score_win < tr.avg_baseline_brier_score_win ? (
                 <span className="text-accent">the model is beating that naive heuristic on average.</span>
@@ -88,7 +93,7 @@ export default function TrackRecordPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-neutral-400">{race.accuracy!.podium_hits} / 3</td>
-                      <td className="px-4 py-3 text-neutral-400">{race.accuracy!.brier_score_win}</td>
+                      <td className="px-4 py-3 text-neutral-400">{formatBrier(race.accuracy!.brier_score_win)}</td>
                       <td className="px-4 py-3 text-neutral-500">
                         {race.backtest ? "Backtest" : "Live"}
                       </td>
