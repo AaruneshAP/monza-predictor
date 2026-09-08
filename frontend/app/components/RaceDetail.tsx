@@ -25,6 +25,57 @@ function levelLabel(score: number): string {
   return "High";
 }
 
+type SortKey =
+  | "position"
+  | "driver"
+  | "team"
+  | "win_pct"
+  | "podium_pct"
+  | "points_pct"
+  | "expected_position"
+  | "actual";
+
+// Which direction makes sense to see FIRST when you click a column you
+// weren't already sorting by — position/driver/team ascending (natural
+// reading order), the rest descending except expected finish, where lower
+// is better so ascending shows the best first.
+const DEFAULT_SORT_DIR: Record<SortKey, "asc" | "desc"> = {
+  position: "asc",
+  driver: "asc",
+  team: "asc",
+  win_pct: "desc",
+  podium_pct: "desc",
+  points_pct: "desc",
+  expected_position: "asc",
+  actual: "asc",
+};
+
+function SortableHeader({
+  label,
+  sortKey: key,
+  activeKey,
+  dir,
+  onSort,
+}: {
+  label: string;
+  sortKey: SortKey;
+  activeKey: SortKey;
+  dir: "asc" | "desc";
+  onSort: (key: SortKey) => void;
+}) {
+  const isActive = activeKey === key;
+  return (
+    <th
+      onClick={() => onSort(key)}
+      className="px-4 py-3 cursor-pointer select-none hover:text-neutral-200 whitespace-nowrap"
+      aria-sort={isActive ? (dir === "asc" ? "ascending" : "descending") : "none"}
+    >
+      {label}
+      <span className="inline-block w-3 ml-1 text-neutral-600">{isActive ? (dir === "asc" ? "▲" : "▼") : ""}</span>
+    </th>
+  );
+}
+
 function ContributionBreakdown({ contributions }: { contributions: Contributions }) {
   const maxAbs = Math.max(...contributions.terms.map((t) => Math.abs(t.value)), 0.0001);
   return (
@@ -72,6 +123,32 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
     for (const row of race.actual.classification) actualByDriver[row.driver] = row.position;
   }
   const [expandedDriver, setExpandedDriver] = useState<string | null>(null);
+  const [showAllDrivers, setShowAllDrivers] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>("position");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  function handleSort(key: SortKey) {
+    if (key === sortKey) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir(DEFAULT_SORT_DIR[key]);
+    }
+  }
+
+  const sortedPredicted = [...race.predicted].sort((a, b) => {
+    const dir = sortDir === "asc" ? 1 : -1;
+    const value = (row: typeof a) => (sortKey === "actual" ? actualByDriver[row.driver] ?? Infinity : row[sortKey]);
+    const av = value(a);
+    const bv = value(b);
+    if (typeof av === "string" && typeof bv === "string") return av.localeCompare(bv) * dir;
+    return ((av as number) - (bv as number)) * dir;
+  });
+  const chartData = showAllDrivers ? race.predicted : top10;
+  // A fixed height dropped every-other Y-axis label once there were more
+  // category ticks than it had room for (see DEBUGGING.md #7) — scale with
+  // the driver count instead of hardcoding a height sized for 10.
+  const chartHeight = Math.max(420, chartData.length * 34);
 
   return (
     <main className="max-w-4xl mx-auto px-6 py-16">
@@ -189,10 +266,21 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
 
       {/* Chart */}
       <section className="mb-14">
-        <h2 className="text-lg font-semibold mb-4">Win Probability — Top 10</h2>
-        <div className="h-[420px]">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h2 className="text-lg font-semibold">
+            Win Probability — {showAllDrivers ? `All ${chartData.length} Drivers` : "Top 10"}
+          </h2>
+          <button
+            type="button"
+            onClick={() => setShowAllDrivers((v) => !v)}
+            className="text-xs px-2.5 py-1 rounded border border-neutral-700 text-neutral-400 hover:text-neutral-200 hover:border-neutral-500"
+          >
+            {showAllDrivers ? "Show top 10" : "Show all drivers"}
+          </button>
+        </div>
+        <div style={{ height: chartHeight }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={top10} layout="vertical" margin={{ left: 40 }}>
+            <BarChart data={chartData} layout="vertical" margin={{ left: 40 }}>
               <XAxis type="number" unit="%" stroke="#666" />
               <YAxis type="category" dataKey="driver" stroke="#666" width={80} interval={0} />
               <Tooltip contentStyle={{ background: "#111", border: "1px solid #333" }} />
@@ -206,24 +294,33 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
       <section className="mb-14">
         <h2 className="text-lg font-semibold mb-1">Full Prediction Table</h2>
         <p className="text-neutral-600 text-xs mb-4">
-          Click a row to see what drove that driver&apos;s score.
+          Click a column header to sort by it, click a row to see what drove that driver&apos;s
+          score.
         </p>
         <div className="overflow-x-auto rounded-lg border border-neutral-800">
           <table className="w-full text-sm text-left">
             <thead className="bg-neutral-900 text-neutral-400">
               <tr>
-                <th className="px-4 py-3">Pos</th>
-                <th className="px-4 py-3">Driver</th>
-                <th className="px-4 py-3">Team</th>
-                <th className="px-4 py-3">Win %</th>
-                <th className="px-4 py-3">Podium %</th>
-                <th className="px-4 py-3">Points %</th>
-                <th className="px-4 py-3">Exp. Pos</th>
-                {race.status === "completed" && <th className="px-4 py-3">Actual</th>}
+                <SortableHeader label="Pos" sortKey="position" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Driver" sortKey="driver" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Team" sortKey="team" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Win %" sortKey="win_pct" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Podium %" sortKey="podium_pct" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Points %" sortKey="points_pct" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+                <SortableHeader
+                  label="Exp. Pos"
+                  sortKey="expected_position"
+                  activeKey={sortKey}
+                  dir={sortDir}
+                  onSort={handleSort}
+                />
+                {race.status === "completed" && (
+                  <SortableHeader label="Actual" sortKey="actual" activeKey={sortKey} dir={sortDir} onSort={handleSort} />
+                )}
               </tr>
             </thead>
             <tbody>
-              {race.predicted.map((row) => {
+              {sortedPredicted.map((row) => {
                 const isExpandable = !!row.contributions;
                 const isExpanded = expandedDriver === row.driver;
                 const columnCount = race.status === "completed" ? 8 : 7;
