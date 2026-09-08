@@ -221,115 +221,137 @@
       {
         "driver": "ANT",
         "team": "Mercedes",
-        "position": 1
+        "position": 1,
+        "status": "Finished"
       },
       {
         "driver": "RUS",
         "team": "Mercedes",
-        "position": 2
+        "position": 2,
+        "status": "Finished"
       },
       {
         "driver": "VER",
         "team": "Red Bull",
-        "position": 3
+        "position": 3,
+        "status": "Finished"
       },
       {
         "driver": "NOR",
         "team": "McLaren",
-        "position": 4
+        "position": 4,
+        "status": "Finished"
       },
       {
         "driver": "PIA",
         "team": "McLaren",
-        "position": 5
+        "position": 5,
+        "status": "Finished"
       },
       {
         "driver": "HAM",
         "team": "Ferrari",
-        "position": 6
+        "position": 6,
+        "status": "Finished"
       },
       {
         "driver": "GAS",
         "team": "Alpine F1 Team",
-        "position": 7
+        "position": 7,
+        "status": "Finished"
       },
       {
         "driver": "LIN",
         "team": "RB F1 Team",
-        "position": 8
+        "position": 8,
+        "status": "Finished"
       },
       {
         "driver": "COL",
         "team": "Alpine F1 Team",
-        "position": 9
+        "position": 9,
+        "status": "Finished"
       },
       {
         "driver": "TSU",
         "team": "RB F1 Team",
-        "position": 10
+        "position": 10,
+        "status": "Finished"
       },
       {
         "driver": "BOR",
         "team": "Audi",
-        "position": 11
+        "position": 11,
+        "status": "Finished"
       },
       {
         "driver": "HUL",
         "team": "Audi",
-        "position": 12
+        "position": 12,
+        "status": "Finished"
       },
       {
         "driver": "SAI",
         "team": "Williams",
-        "position": 13
+        "position": 13,
+        "status": "Finished"
       },
       {
         "driver": "LAW",
         "team": "Red Bull",
-        "position": 14
+        "position": 14,
+        "status": "Finished"
       },
       {
         "driver": "BEA",
         "team": "Haas F1 Team",
-        "position": 15
+        "position": 15,
+        "status": "Finished"
       },
       {
         "driver": "OCO",
         "team": "Haas F1 Team",
-        "position": 16
+        "position": 16,
+        "status": "Lapped"
       },
       {
         "driver": "ALB",
         "team": "Williams",
-        "position": 17
+        "position": 17,
+        "status": "Lapped"
       },
       {
         "driver": "PER",
         "team": "Cadillac F1 Team",
-        "position": 18
+        "position": 18,
+        "status": "Lapped"
       },
       {
         "driver": "BOT",
         "team": "Cadillac F1 Team",
-        "position": 19
+        "position": 19,
+        "status": "Lapped"
       },
       {
         "driver": "STR",
         "team": "Aston Martin",
-        "position": 20
+        "position": 20,
+        "status": "Retired"
       },
       {
         "driver": "ALO",
         "team": "Aston Martin",
-        "position": 21
+        "position": 21,
+        "status": "Retired"
       },
       {
         "driver": "LEC",
         "team": "Ferrari",
-        "position": 22
+        "position": 22,
+        "status": "Retired"
       }
     ],
-    "graded_at": "2026-09-07T02:47:51.477478+00:00"
+    "graded_at": "2026-09-08T11:00:19.701922+00:00"
   },
   "accuracy": {
     "predicted_winner": "RUS",
@@ -339,6 +361,12 @@
     "actual_winner_predicted_prob_pct": 10.3,
     "podium_hits": 1,
     "brier_score_win": 0.0407,
-    "mean_abs_position_error": 3.18
+    "mean_abs_position_error": 3.18,
+    "result_notes": [
+      "GAS (predicted podium) finished P7 instead.",
+      "HAM (predicted podium) finished P6 instead.",
+      "ANT finished P1 \u2014 the model projected around P7.",
+      "VER finished P3 \u2014 the model projected around P8."
+    ]
   }
 }

@@ -221,115 +221,137 @@
       {
         "driver": "NOR",
         "team": "McLaren",
-        "position": 1
+        "position": 1,
+        "status": "Finished"
       },
       {
         "driver": "VER",
-        "team": "Red Bull Racing",
-        "position": 2
+        "team": "Red Bull",
+        "position": 2,
+        "status": "Finished"
       },
       {
         "driver": "ANT",
         "team": "Mercedes",
-        "position": 3
+        "position": 3,
+        "status": "Finished"
       },
       {
         "driver": "LEC",
         "team": "Ferrari",
-        "position": 4
+        "position": 4,
+        "status": "Finished"
       },
       {
         "driver": "HAM",
         "team": "Ferrari",
-        "position": 5
+        "position": 5,
+        "status": "Finished"
       },
       {
         "driver": "HAD",
-        "team": "Red Bull Racing",
-        "position": 6
+        "team": "Red Bull",
+        "position": 6,
+        "status": "Finished"
       },
       {
         "driver": "RUS",
         "team": "Mercedes",
-        "position": 7
+        "position": 7,
+        "status": "Finished"
       },
       {
         "driver": "LAW",
-        "team": "Racing Bulls",
-        "position": 8
+        "team": "RB F1 Team",
+        "position": 8,
+        "status": "Lapped"
       },
       {
         "driver": "HUL",
         "team": "Audi",
-        "position": 9
+        "position": 9,
+        "status": "Lapped"
       },
       {
         "driver": "LIN",
-        "team": "Racing Bulls",
-        "position": 10
+        "team": "RB F1 Team",
+        "position": 10,
+        "status": "Lapped"
       },
       {
         "driver": "BOR",
         "team": "Audi",
-        "position": 11
+        "position": 11,
+        "status": "Lapped"
       },
       {
         "driver": "GAS",
-        "team": "Alpine",
-        "position": 12
+        "team": "Alpine F1 Team",
+        "position": 12,
+        "status": "Lapped"
       },
       {
         "driver": "STR",
         "team": "Aston Martin",
-        "position": 13
+        "position": 13,
+        "status": "Lapped"
       },
       {
         "driver": "ALO",
         "team": "Aston Martin",
-        "position": 14
+        "position": 14,
+        "status": "Lapped"
       },
       {
         "driver": "COL",
-        "team": "Alpine",
-        "position": 15
+        "team": "Alpine F1 Team",
+        "position": 15,
+        "status": "Lapped"
       },
       {
         "driver": "OCO",
         "team": "Haas F1 Team",
-        "position": 16
+        "position": 16,
+        "status": "Lapped"
       },
       {
         "driver": "ALB",
         "team": "Williams",
-        "position": 17
+        "position": 17,
+        "status": "Lapped"
       },
       {
         "driver": "SAI",
         "team": "Williams",
-        "position": 18
+        "position": 18,
+        "status": "Lapped"
       },
       {
         "driver": "BEA",
         "team": "Haas F1 Team",
-        "position": 19
+        "position": 19,
+        "status": "Lapped"
       },
       {
         "driver": "PIA",
         "team": "McLaren",
-        "position": 20
+        "position": 20,
+        "status": "Retired"
       },
       {
         "driver": "PER",
-        "team": "Cadillac",
-        "position": 21
+        "team": "Cadillac F1 Team",
+        "position": 21,
+        "status": "Retired"
       },
       {
         "driver": "BOT",
-        "team": "Cadillac",
-        "position": 22
+        "team": "Cadillac F1 Team",
+        "position": 22,
+        "status": "Retired"
       }
     ],
-    "graded_at": "2026-08-31T06:12:36.892476+00:00"
+    "graded_at": "2026-09-08T11:00:17.718776+00:00"
   },
   "accuracy": {
     "predicted_winner": "ANT",
@@ -339,6 +361,12 @@
     "actual_winner_predicted_prob_pct": 6.3,
     "podium_hits": 1,
     "brier_score_win": 0.0481,
-    "mean_abs_position_error": 3.49
+    "mean_abs_position_error": 3.49,
+    "result_notes": [
+      "RUS (predicted podium) finished P7 instead.",
+      "HAM (predicted podium) finished P5 instead.",
+      "NOR finished P1 \u2014 the model projected around P8.",
+      "VER finished P2 \u2014 the model projected around P8."
+    ]
   }
 }
