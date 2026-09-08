@@ -13,7 +13,7 @@ export type PredictionRow = {
   expected_position: number;
 };
 
-export type ActualRow = { driver: string; team: string; position: number };
+export type ActualRow = { driver: string; team: string; position: number; status?: string };
 
 export type Accuracy = {
   predicted_winner: string;
@@ -24,6 +24,9 @@ export type Accuracy = {
   podium_hits: number;
   brier_score_win: number;
   mean_abs_position_error: number | null;
+  // Absent on races graded before this field existed — always guard with
+  // `?.length` before rendering, never assume it's present.
+  result_notes?: string[];
 };
 
 export type CircuitProfile = {

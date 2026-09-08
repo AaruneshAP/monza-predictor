@@ -102,6 +102,21 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
               : "Predicted live, before the race."}{" "}
             See the <a href="/track-record" className="underline hover:text-accent">track record</a> page for the model's accuracy across every graded race.
           </p>
+          {race.accuracy.result_notes && race.accuracy.result_notes.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-accent/20">
+              <p className="text-neutral-500 text-xs mb-2">Where the podium call missed</p>
+              <ul className="text-sm space-y-1.5">
+                {race.accuracy.result_notes.map((note, i) => (
+                  <li key={i} className="flex gap-2">
+                    <span className="text-neutral-600" aria-hidden="true">
+                      •
+                    </span>
+                    <span className="text-neutral-300">{note}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
       )}
 

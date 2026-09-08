@@ -14,6 +14,7 @@ Run this after generate_predictions.py in the scheduled workflow (see
 races have finished since the last run and leaves everything else alone.
 """
 
+import argparse
 import os
 from datetime import datetime, timezone
 
@@ -30,7 +31,13 @@ def _load_actual_result(round_number: int) -> list[dict] | None:
     behind the last classified driver (same convention as the historical
     baseline in race_model.py, for consistency). Returns None if the
     session has no real result yet (race hasn't actually happened, even if
-    its scheduled date has passed)."""
+    its scheduled date has passed).
+
+    Carries FastF1's own classification `status` per driver ("Finished",
+    "+1 Lap", "Accident", "Collision", "Retired", "Engine", "Gearbox", …)
+    — this is what lets _score() explain *why* a prediction missed (a
+    retirement, not just a worse finish) without inventing a reason FastF1
+    doesn't actually give us."""
     try:
         session = fastf1.get_session(SEASON_YEAR, round_number, "R")
         session.load(laps=False, telemetry=False, weather=False, messages=False)
@@ -46,9 +53,60 @@ def _load_actual_result(round_number: int) -> list[dict] | None:
     results["Position"] = results["Position"].fillna(fallback_pos)
 
     return [
-        {"driver": r["Abbreviation"], "team": r["TeamName"], "position": int(r["Position"])}
+        {
+            "driver": r["Abbreviation"],
+            "team": r["TeamName"],
+            "position": int(r["Position"]),
+            "status": r["Status"],
+        }
         for _, r in results.iterrows()
     ]
+
+
+def _is_classified_finish(status: str | None) -> bool:
+    """True for an ordinary classified finish (on the lead lap, or lapped
+    but still running at the end) — anything else (Accident, Collision,
+    Retired, Engine, Gearbox, DSQ, …) is a real incident worth naming
+    rather than treating as just "finished lower than predicted"."""
+    return status is not None and (status == "Finished" or status.startswith("+"))
+
+
+def _result_notes(predicted: list[dict], actual: list[dict], predicted_podium: set, actual_podium: set) -> list[str]:
+    """Factual, data-grounded explanation of where the podium prediction
+    went wrong — grounded only in FastF1's own classification status, not
+    a speculative lap-by-lap story it doesn't have data for."""
+    status_by_driver = {row["driver"]: row.get("status") for row in actual}
+    position_by_driver = {row["driver"]: row["position"] for row in actual}
+    expected_position_by_driver = {row["driver"]: row["expected_position"] for row in predicted}
+
+    notes = []
+
+    # Predicted-podium picks that missed the actual podium, in the order
+    # the model ranked them (win_pct desc).
+    for row in predicted[:3]:
+        driver = row["driver"]
+        if driver in actual_podium:
+            continue
+        status = status_by_driver.get(driver)
+        position = position_by_driver.get(driver)
+        if position is None:
+            notes.append(f"{driver} (predicted podium) wasn't in the actual classification.")
+        elif not _is_classified_finish(status):
+            notes.append(f"{driver} (predicted podium) didn't finish — {status}.")
+        else:
+            notes.append(f"{driver} (predicted podium) finished P{position} instead.")
+
+    # Actual podium finishers the model didn't see coming, in finishing order.
+    surprises = sorted(actual_podium - predicted_podium, key=lambda d: position_by_driver[d])
+    for driver in surprises:
+        position = position_by_driver[driver]
+        expected = expected_position_by_driver.get(driver)
+        if expected is not None:
+            notes.append(f"{driver} finished P{position} — the model projected around P{round(expected)}.")
+        else:
+            notes.append(f"{driver} finished P{position} but wasn't part of the predicted grid.")
+
+    return notes
 
 
 def _score(predicted: list[dict], actual: list[dict]) -> dict:
@@ -92,10 +150,25 @@ def _score(predicted: list[dict], actual: list[dict]) -> dict:
         "podium_hits": podium_hits,
         "brier_score_win": round(brier_score_win, 4),
         "mean_abs_position_error": mean_abs_position_error,
+        "result_notes": _result_notes(predicted, actual, predicted_podium, actual_podium),
     }
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--regrade",
+        action="store_true",
+        help=(
+            "Also re-grade races already marked completed, re-fetching their "
+            "real result and re-scoring against the *stored* prediction "
+            "(never re-generates the prediction itself, so this can't turn "
+            "into hindsight) — for backfilling accuracy/result_notes schema "
+            "changes onto races graded before they existed."
+        ),
+    )
+    args = parser.parse_args()
+
     os.makedirs("./fastf1_cache", exist_ok=True)
     fastf1.Cache.enable_cache("./fastf1_cache")
     graded_any = False
@@ -104,8 +177,9 @@ def main():
         existing = archive.read_race(r["slug"])
         if existing is None:
             continue  # never predicted — nothing to grade
-        if existing.get("status") == "completed":
-            continue  # already graded
+        already_graded = existing.get("status") == "completed"
+        if already_graded and not args.regrade:
+            continue
         if existing.get("race_date") > datetime.now(timezone.utc).strftime("%Y-%m-%d"):
             continue  # hasn't happened yet
 
@@ -122,7 +196,8 @@ def main():
         }
         existing["accuracy"] = _score(existing["predicted"], actual)
         archive.write_race(r["slug"], existing)
-        print(f"  graded: predicted {existing['accuracy']['predicted_winner']} to win, actual winner {existing['accuracy']['actual_winner']} ({'correct' if existing['accuracy']['winner_correct'] else 'incorrect'})")
+        verb = "re-graded" if already_graded else "graded"
+        print(f"  {verb}: predicted {existing['accuracy']['predicted_winner']} to win, actual winner {existing['accuracy']['actual_winner']} ({'correct' if existing['accuracy']['winner_correct'] else 'incorrect'})")
         graded_any = True
 
     rebuild_index()

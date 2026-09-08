@@ -13,6 +13,7 @@ frontend/.next/
 frontend/out/
 frontend/.vercel/
 npm-debug.log*
+*.tsbuildinfo
 
 # Env
 .env
