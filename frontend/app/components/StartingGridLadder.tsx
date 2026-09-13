@@ -11,7 +11,20 @@ function hexToRgb(hex: string): string {
 }
 
 export default function StartingGridLadder({ predicted }: { predicted: PredictionRow[] }) {
-  const grid = predicted.slice(0, 10);
+  // Ordered by the real (or, pre-quali, projected) starting-grid slot —
+  // NOT by predicted win probability. This is meant to look like an
+  // actual F1 grid, so the order needs to actually BE the grid; showing
+  // the top 10 by win% instead was a real bug (drivers up front here
+  // didn't match the real announced grid once qualifying had happened).
+  // Falls back to win_pct rank only for a race predicted before
+  // grid_position existed, so an old prediction still renders something.
+  const hasGridPositions = predicted.some((row) => row.grid_position != null);
+  const ordered = hasGridPositions
+    ? predicted
+        .filter((row) => row.grid_position != null)
+        .sort((a, b) => a.grid_position! - b.grid_position!)
+    : predicted;
+  const grid = ordered.slice(0, 10);
   if (grid.length === 0) return null;
   const maxWinPct = Math.max(...grid.map((row) => row.win_pct), 0.0001);
 
@@ -45,7 +58,7 @@ export default function StartingGridLadder({ predicted }: { predicted: Predictio
             }}
           >
             <div className="flex items-baseline justify-between gap-2">
-              <span className="text-[10px] text-neutral-500 font-mono">P{row.position}</span>
+              <span className="text-[10px] text-neutral-500 font-mono">P{row.grid_position ?? row.position}</span>
               <span className="text-sm font-semibold text-neutral-100 font-mono">{row.win_pct}%</span>
             </div>
             <p className="text-xl font-bold text-neutral-50 leading-tight mt-1">{row.driver}</p>

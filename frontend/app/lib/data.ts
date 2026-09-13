@@ -18,6 +18,13 @@ export type PredictionRow = {
   position: number;
   driver: string;
   team: string;
+  // The real (once quali's run) or projected starting-grid slot — NOT the
+  // same thing as `position` above, which ranks by predicted win
+  // probability. Absent on a race predicted before this field existed,
+  // and can be missing for an individual driver even on a race that has
+  // it if that driver's real grid slot wasn't resolvable (e.g. a gap in
+  // the live qualifying data this was generated from).
+  grid_position?: number | null;
   win_pct: number;
   // Standard deviation of win_pct across N_CONFIDENCE_BATCHES Monte Carlo
   // batches — this driver's own simulation-estimation noise at this

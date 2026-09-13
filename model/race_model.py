@@ -573,6 +573,26 @@ def build_features(raw: dict) -> pd.DataFrame:
         # live_quali itself — this session's own entry list, so it's
         # ground truth for team too, not just presence — falling back to
         # `grid` only on the rare miss (e.g. a blank TeamName in results).
+        #
+        # That tradeoff assumes live_quali's entry list is complete
+        # whenever it's non-empty — but FastF1's own results table can
+        # itself be missing an entrant who really did take part (a data
+        # feed gap, not a real absence), especially right after a session
+        # or at a brand-new venue's first-ever race. There's no way to
+        # tell "genuinely not racing" apart from "FastF1 just doesn't have
+        # them yet" from here, so this doesn't try to guess — it only
+        # makes the gap loud instead of silent, so a real case of it
+        # (confirmed missing two drivers, Spanish GP practice week 2026)
+        # is diagnosable from the run's own log instead of just quietly
+        # producing a 20-driver grid nobody asked for.
+        missing = sorted(set(grid["driver"]) - set(live_quali["driver"]))
+        if missing:
+            print(
+                f"  [live quali] WARNING: {missing} raced the most recent completed round but "
+                f"aren't in this session's live quali results — dropped from this prediction. "
+                f"Could be a real absence (injury, reserve driver) or FastF1's own data for this "
+                f"session just being incomplete; not distinguishable from here."
+            )
         feat = live_quali.rename(columns={"top_speed": "live_top_speed"})
         feat = feat.merge(
             grid[["driver", "team"]].rename(columns={"team": "grid_team"}), on="driver", how="left"
