@@ -268,8 +268,9 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
           <>
             <StartingGridLadder predicted={race.predicted} />
             <p className="text-neutral-400 text-sm mt-4">
-              Arranged like a real starting grid — highest win probability at P1, each block colored
-              by team and glowing brighter the more likely that driver is to win.
+              Ordered by the actual starting grid (or, before qualifying, a projection from season
+              form) — not by win probability. Each block is colored by team and glows brighter the
+              more likely that driver is to win the race from that slot.
             </p>
           </>
         )}

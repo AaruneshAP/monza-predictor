@@ -25,6 +25,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import fastf1
+import pandas as pd
 
 import archive
 from race_model import (
@@ -103,6 +104,22 @@ def generate(round_number: int, backtest: bool = False, force: bool = False, raw
         features, raw["profile"], n_sims=100_000, rain_probability=raw["rain_probability"]
     )
     contributions = compute_contributions(features, raw["profile"], rain_probability=raw["rain_probability"])
+    # The real (or, before quali, projected) starting-grid slot — distinct
+    # from `position` below, which ranks by predicted win probability, not
+    # by where a driver actually starts. See race_model.py's build_features
+    # docstring for how grid_pos is sourced (live quali once it's run,
+    # otherwise a season-form projection).
+    #
+    # Cast to plain int: features["grid_pos"] can come back as either
+    # numpy float64 (the live-quali branch's NaN-safe fillna pipeline) or
+    # numpy int64 (the projected-grid branch's feat.index + 1) depending
+    # on grid_source. float64 happens to subclass Python's float so it's
+    # JSON-serializable as-is, but int64 does NOT subclass int and
+    # json.dumps rejects it outright — casting explicitly avoids that
+    # landmine regardless of which branch produced this round's grid.
+    grid_position_by_driver = {
+        driver: int(pos) for driver, pos in zip(features["driver"], features["grid_pos"]) if pd.notna(pos)
+    }
 
     payload = {
         "year": SEASON_YEAR,
@@ -127,6 +144,7 @@ def generate(round_number: int, backtest: bool = False, force: bool = False, raw
                 "position": i + 1,
                 "driver": row["driver"],
                 "team": row.get("team", ""),
+                "grid_position": grid_position_by_driver.get(row["driver"]),
                 "win_pct": row["win_pct"],
                 "win_pct_stdev": row.get("win_pct_stdev"),
                 "podium_pct": row["podium_pct"],

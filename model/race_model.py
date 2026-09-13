@@ -72,21 +72,35 @@ GRID_OVERRIDE_BY_ROUND = {}
 # ---------------------------------------------------------------
 
 
-def _completed_rounds(season: int, strictly_before_round: int | None = None) -> list[int]:
-    """Round numbers for `season` that count as "already happened".
+def _completed_rounds(season: int, round_number: int, backtest: bool) -> list[int]:
+    """Round numbers for `season` that count as "already happened" for the
+    purpose of predicting `round_number` — which is ALWAYS excluded from
+    the result, in both modes. A round can't be completed relative to
+    itself, and in live mode specifically: by the time this runs, the
+    round being predicted can already have today's calendar date (its
+    quali ran this morning; the race itself is later today) — without
+    excluding it explicitly, a live-mode prediction made on race day
+    would count that round as "completed" purely by date and try to load
+    its own not-yet-existent Race session for _load_current_grid(),
+    silently getting an empty roster back instead of the real one (this
+    isn't hypothetical — confirmed live on Spanish GP race day, 2026-09-13,
+    where it produced an unnoticed empty grid fallback while live_quali
+    papered over the gap for everything except this).
 
-    Live mode (strictly_before_round=None): rounds whose date has passed,
-    per the real calendar.
+    Backtest mode (backtest=True): every round number < round_number,
+    regardless of today's real date — this is what makes a backtest a
+    fair blind prediction using only what would have been known before
+    round_number, independent of when this actually runs.
 
-    Backtest mode (strictly_before_round=N): every round number < N,
-    regardless of today's date — this is what makes a backtest a fair
-    blind prediction using only what would have been known before round N.
+    Live mode (backtest=False): additionally restricted to a round whose
+    date has actually passed, per the real calendar — mostly relevant if
+    the calendar's ever reshuffled mid-season so round numbers stop being
+    strictly chronological.
     """
     schedule = fastf1.get_event_schedule(season)
     rounds = schedule[schedule["RoundNumber"] > 0]
-    if strictly_before_round is not None:
-        rounds = rounds[rounds["RoundNumber"] < strictly_before_round]
-    else:
+    rounds = rounds[rounds["RoundNumber"] < round_number]
+    if not backtest:
         now = pd.Timestamp.now(tz="UTC")
         rounds = rounds[rounds["EventDate"] < now.tz_localize(None)]
     return sorted(rounds["RoundNumber"].tolist())
@@ -419,8 +433,7 @@ def load_race_context(round_number: int, cache_dir: str = "./fastf1_cache", back
     event_name = profile["event_name"]
 
     print(f"Loading current-season schedule (round {round_number}: {event_name})...")
-    cutoff = round_number if backtest else None
-    completed = _completed_rounds(SEASON_YEAR, strictly_before_round=cutoff)
+    completed = _completed_rounds(SEASON_YEAR, round_number, backtest)
     if not completed:
         raise RuntimeError(
             f"No completed {SEASON_YEAR} rounds found before round {round_number} — "
@@ -573,6 +586,26 @@ def build_features(raw: dict) -> pd.DataFrame:
         # live_quali itself — this session's own entry list, so it's
         # ground truth for team too, not just presence — falling back to
         # `grid` only on the rare miss (e.g. a blank TeamName in results).
+        #
+        # That tradeoff assumes live_quali's entry list is complete
+        # whenever it's non-empty — but FastF1's own results table can
+        # itself be missing an entrant who really did take part (a data
+        # feed gap, not a real absence), especially right after a session
+        # or at a brand-new venue's first-ever race. There's no way to
+        # tell "genuinely not racing" apart from "FastF1 just doesn't have
+        # them yet" from here, so this doesn't try to guess — it only
+        # makes the gap loud instead of silent, so a real case of it
+        # (confirmed missing two drivers, Spanish GP practice week 2026)
+        # is diagnosable from the run's own log instead of just quietly
+        # producing a 20-driver grid nobody asked for.
+        missing = sorted(set(grid["driver"]) - set(live_quali["driver"]))
+        if missing:
+            print(
+                f"  [live quali] WARNING: {missing} raced the most recent completed round but "
+                f"aren't in this session's live quali results — dropped from this prediction. "
+                f"Could be a real absence (injury, reserve driver) or FastF1's own data for this "
+                f"session just being incomplete; not distinguishable from here."
+            )
         feat = live_quali.rename(columns={"top_speed": "live_top_speed"})
         feat = feat.merge(
             grid[["driver", "team"]].rename(columns={"team": "grid_team"}), on="driver", how="left"
