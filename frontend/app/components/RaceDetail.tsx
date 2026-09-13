@@ -219,7 +219,9 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
       {/* Chart */}
       <section className="mb-14">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-          <h2 className="text-lg font-semibold">Win Probability — Top 10</h2>
+          <h2 className="text-lg font-semibold">
+            {winProbView === "bars" ? "Win Probability — Top 10" : "Starting Grid"}
+          </h2>
           <div className="flex rounded-md border border-neutral-800 overflow-hidden text-xs">
             <button
               type="button"
@@ -268,9 +270,9 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
           <>
             <StartingGridLadder predicted={race.predicted} />
             <p className="text-neutral-400 text-sm mt-4">
-              Ordered by the actual starting grid (or, before qualifying, a projection from season
-              form) — not by win probability. Each block is colored by team and glows brighter the
-              more likely that driver is to win the race from that slot.
+              The actual starting grid (or, before qualifying, a projection from season form) —
+              a fact about the session, not a prediction. Each block is colored by team; see the
+              Bars view above for the model's win probability.
             </p>
           </>
         )}
