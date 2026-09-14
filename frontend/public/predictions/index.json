@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "updated_at": "2026-09-13T17:57:09.754808+00:00",
+  "updated_at": "2026-09-14T03:14:33.529915+00:00",
   "races": [
     {
       "round": 1,
@@ -98,14 +98,14 @@
       "slug": "2026-r14-spanish-grand-prix",
       "race_name": "Spanish Grand Prix",
       "race_date": "2026-09-13",
-      "status": "predicted"
+      "status": "completed"
     },
     {
       "round": 15,
       "slug": "2026-r15-azerbaijan-grand-prix",
       "race_name": "Azerbaijan Grand Prix",
       "race_date": "2026-09-26",
-      "status": "not_predicted"
+      "status": "predicted"
     },
     {
       "round": 16,
@@ -164,22 +164,22 @@
       "status": "not_predicted"
     }
   ],
-  "next_race_slug": "2026-r14-spanish-grand-prix",
+  "next_race_slug": "2026-r15-azerbaijan-grand-prix",
   "track_record": {
-    "races_scored": 4,
-    "winner_hit_rate_pct": 50.0,
-    "avg_brier_score_win": 0.0379,
-    "avg_mean_abs_position_error": 3.27,
-    "avg_podium_hits": 1.5,
-    "avg_baseline_brier_score_win": 0.0227
+    "races_scored": 5,
+    "winner_hit_rate_pct": 40.0,
+    "avg_brier_score_win": 0.0382,
+    "avg_mean_abs_position_error": 3.2,
+    "avg_podium_hits": 1.6,
+    "avg_baseline_brier_score_win": 0.0382
   },
   "calibration_bins": [
     {
       "bin_start": 0,
       "bin_end": 10,
-      "n": 71,
-      "avg_predicted_win_pct": 1.4,
-      "actual_win_rate_pct": 1.4
+      "n": 89,
+      "avg_predicted_win_pct": 1.7,
+      "actual_win_rate_pct": 1.1
     },
     {
       "bin_start": 10,
@@ -191,15 +191,15 @@
     {
       "bin_start": 20,
       "bin_end": 30,
-      "n": 3,
-      "avg_predicted_win_pct": 23.4,
-      "actual_win_rate_pct": 66.7
+      "n": 4,
+      "avg_predicted_win_pct": 22.6,
+      "actual_win_rate_pct": 75.0
     },
     {
       "bin_start": 30,
       "bin_end": 40,
-      "n": 1,
-      "avg_predicted_win_pct": 33.2,
+      "n": 2,
+      "avg_predicted_win_pct": 33.9,
       "actual_win_rate_pct": 0.0
     }
   ]
