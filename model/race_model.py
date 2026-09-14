@@ -373,8 +373,23 @@ def _live_quali_features(session) -> pd.DataFrame:
 def _live_practice_tire_deg(session) -> pd.Series:
     """Lap-time-vs-tyre-life slope from actual FP2 long runs, per driver —
     a much more relevant degradation signal than season-average once it's
-    available, since it's this track's own tarmac/temps."""
-    laps = session.laps.copy()
+    available, since it's this track's own tarmac/temps.
+
+    _load_live_session() already checked session.results is non-empty
+    before handing this session over, but that doesn't guarantee
+    session.laps is actually loaded too — confirmed live: FP2's results
+    came back non-empty while its laps feed specifically raised
+    DataNotLoadedError, an uncaught crash that killed the whole
+    prediction run (same category of partial-data gap _live_quali_features()
+    already tolerates for its own laps-only top_speed column). Treated the
+    same as "no usable FP2 data" — the empty-series return below already
+    has an established caller-side fallback (load_race_context() converts
+    an empty result to tire_deg_source="season_form").
+    """
+    try:
+        laps = session.laps.copy()
+    except Exception:
+        return pd.Series(dtype=float)
     laps["LapSeconds"] = laps["LapTime"].dt.total_seconds()
     clean = laps[
         laps["PitInTime"].isna()
