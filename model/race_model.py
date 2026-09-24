@@ -64,8 +64,28 @@ RECENT_ROUNDS_FOR_FORM = 8  # how many of the season's completed rounds to use f
 # LAW+LIN — confirms the swap), but whether Hadjar is actually back for
 # Monza is unconfirmed as of 2026-09-05 — no override entered here until
 # it is, so the pre-quali projection falls back to round 12's actual grid
-# (Lawson at Red Bull) rather than guessing.
-GRID_OVERRIDE_BY_ROUND = {}
+# (Lawson at Red Bull) rather than guessing. As it turned out, Lawson's
+# Red Bull seat lasted through rounds 13 and 14 too (live_quali confirmed
+# it for real both times, not a guess) — a longer substitution than round
+# 12's roster diff suggested, not a one-race swap.
+#
+# Round 15 (Azerbaijan GP): Hadjar has returned to Red Bull, confirmed via
+# FP1 (2026-09-24) — but he doesn't appear in round 14's roster at all (he
+# wasn't racing that round), so _load_current_grid()'s "most recent
+# completed round" heuristic has no way to know he exists again, let alone
+# that he's back at Red Bull specifically, and round 15's pre-quali
+# projection kept carrying Lawson forward at Red Bull. Restores Hadjar to
+# Red Bull and moves Lawson back to Racing Bulls for round 15's projection;
+# superseded automatically once round 15's live_quali exists, same as
+# every other entry here.
+GRID_OVERRIDE_BY_ROUND = {
+    15: {
+        "team_overrides": {
+            "HAD": "Red Bull",
+            "LAW": "RB F1 Team",
+        },
+    },
+}
 
 # ---------------------------------------------------------------
 # 1. DATA LOADING
