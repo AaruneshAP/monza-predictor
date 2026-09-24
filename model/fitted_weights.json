@@ -1,0 +1,26 @@
+{
+  "calibration": {
+    "quali_weight": 1.0,
+    "points_weight": 3.0,
+    "grid_weight": 0.25,
+    "top_speed_weight": 1.0,
+    "tire_deg_weight": 1.0,
+    "historical_weight": 0.25,
+    "pit_weight": 1.0
+  },
+  "meta": {
+    "fit_at": "2026-09-08T14:07:32.723009+00:00",
+    "method": "coordinate-wise grid search minimizing a softmax-proxy Brier score (see fit_weights.py docstring)",
+    "n_races": 2,
+    "rounds": [
+      10,
+      11
+    ],
+    "date_range": [
+      "2026-07-19",
+      "2026-07-26"
+    ],
+    "proxy_brier_baseline": 0.0431,
+    "proxy_brier_fitted": 0.0422
+  }
+}
