@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "updated_at": "2026-09-26T15:45:41.229160+00:00",
+  "updated_at": "2026-09-26T20:40:07.275056+00:00",
   "races": [
     {
       "round": 1,
@@ -112,7 +112,7 @@
       "slug": "2026-r16-bahrain-grand-prix",
       "race_name": "Bahrain Grand Prix",
       "race_date": "2026-10-04",
-      "status": "not_predicted"
+      "status": "predicted"
     },
     {
       "round": 17,
