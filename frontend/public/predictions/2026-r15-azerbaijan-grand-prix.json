@@ -4,9 +4,9 @@
   "race_name": "Azerbaijan Grand Prix",
   "slug": "2026-r15-azerbaijan-grand-prix",
   "race_date": "2026-09-26",
-  "generated_at": "2026-09-26T10:48:47.543092+00:00",
+  "generated_at": "2026-09-26T15:45:39.694577+00:00",
   "backtest": false,
-  "status": "predicted",
+  "status": "completed",
   "n_simulations": 100000,
   "rain_probability_pct": 0.0,
   "grid_source": "live_qualifying",
@@ -1140,6 +1140,184 @@
       }
     }
   ],
-  "actual": null,
-  "accuracy": null
+  "actual": {
+    "classification": [
+      {
+        "driver": "RUS",
+        "team": "Mercedes",
+        "position": 1,
+        "status": "Finished",
+        "grid_position": -1
+      },
+      {
+        "driver": "VER",
+        "team": "Red Bull",
+        "position": 2,
+        "status": "Finished",
+        "grid_position": -1
+      },
+      {
+        "driver": "HAD",
+        "team": "Red Bull",
+        "position": 3,
+        "status": "Finished",
+        "grid_position": -1
+      },
+      {
+        "driver": "LEC",
+        "team": "Ferrari",
+        "position": 4,
+        "status": "Finished",
+        "grid_position": -1
+      },
+      {
+        "driver": "ANT",
+        "team": "Mercedes",
+        "position": 5,
+        "status": "Finished",
+        "grid_position": -1
+      },
+      {
+        "driver": "HAM",
+        "team": "Ferrari",
+        "position": 6,
+        "status": "Finished",
+        "grid_position": -1
+      },
+      {
+        "driver": "LIN",
+        "team": "RB F1 Team",
+        "position": 7,
+        "status": "Finished",
+        "grid_position": -1
+      },
+      {
+        "driver": "OCO",
+        "team": "Haas F1 Team",
+        "position": 8,
+        "status": "Finished",
+        "grid_position": -1
+      },
+      {
+        "driver": "BEA",
+        "team": "Haas F1 Team",
+        "position": 9,
+        "status": "Finished",
+        "grid_position": -1
+      },
+      {
+        "driver": "SAI",
+        "team": "Williams",
+        "position": 10,
+        "status": "Finished",
+        "grid_position": -1
+      },
+      {
+        "driver": "HUL",
+        "team": "Audi",
+        "position": 11,
+        "status": "Finished",
+        "grid_position": -1
+      },
+      {
+        "driver": "LAW",
+        "team": "RB F1 Team",
+        "position": 12,
+        "status": "Finished",
+        "grid_position": -1
+      },
+      {
+        "driver": "BOR",
+        "team": "Audi",
+        "position": 13,
+        "status": "Finished",
+        "grid_position": -1
+      },
+      {
+        "driver": "PIA",
+        "team": "McLaren",
+        "position": 14,
+        "status": "Finished",
+        "grid_position": -1
+      },
+      {
+        "driver": "PER",
+        "team": "Cadillac F1 Team",
+        "position": 15,
+        "status": "Finished",
+        "grid_position": -1
+      },
+      {
+        "driver": "BOT",
+        "team": "Cadillac F1 Team",
+        "position": 16,
+        "status": "Retired",
+        "grid_position": -1
+      },
+      {
+        "driver": "COL",
+        "team": "Alpine F1 Team",
+        "position": 17,
+        "status": "Retired",
+        "grid_position": -1
+      },
+      {
+        "driver": "GAS",
+        "team": "Alpine F1 Team",
+        "position": 18,
+        "status": "Retired",
+        "grid_position": -1
+      },
+      {
+        "driver": "NOR",
+        "team": "McLaren",
+        "position": 19,
+        "status": "Retired",
+        "grid_position": -1
+      },
+      {
+        "driver": "ALB",
+        "team": "Williams",
+        "position": 20,
+        "status": "Retired",
+        "grid_position": -1
+      },
+      {
+        "driver": "ALO",
+        "team": "Aston Martin",
+        "position": 21,
+        "status": "Retired",
+        "grid_position": -1
+      },
+      {
+        "driver": "STR",
+        "team": "Aston Martin",
+        "position": 22,
+        "status": "Retired",
+        "grid_position": -1
+      }
+    ],
+    "graded_at": "2026-09-26T15:45:41.208545+00:00"
+  },
+  "accuracy": {
+    "predicted_winner": "RUS",
+    "predicted_winner_prob_pct": 34.5,
+    "actual_winner": "RUS",
+    "winner_correct": true,
+    "actual_winner_predicted_prob_pct": 34.5,
+    "podium_hits": 1,
+    "brier_score_win": 0.0226,
+    "mean_abs_position_error": 4.41,
+    "result_notes": [
+      "HAM (predicted podium) finished P6 instead.",
+      "LEC (predicted podium) finished P4 instead.",
+      "VER finished P2 \u2014 the model projected around P7.",
+      "HAD finished P3 \u2014 the model projected around P7."
+    ],
+    "baseline": {
+      "polesitter": "RUS",
+      "winner_correct": true,
+      "brier_score_win": 0.0
+    }
+  }
 }

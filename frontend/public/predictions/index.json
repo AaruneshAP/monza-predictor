@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "updated_at": "2026-09-26T10:48:49.157248+00:00",
+  "updated_at": "2026-09-26T15:45:41.229160+00:00",
   "races": [
     {
       "round": 1,
@@ -105,7 +105,7 @@
       "slug": "2026-r15-azerbaijan-grand-prix",
       "race_name": "Azerbaijan Grand Prix",
       "race_date": "2026-09-26",
-      "status": "predicted"
+      "status": "completed"
     },
     {
       "round": 16,
@@ -164,29 +164,29 @@
       "status": "not_predicted"
     }
   ],
-  "next_race_slug": "2026-r15-azerbaijan-grand-prix",
+  "next_race_slug": "2026-r16-bahrain-grand-prix",
   "track_record": {
-    "races_scored": 5,
-    "winner_hit_rate_pct": 40.0,
-    "avg_brier_score_win": 0.0382,
-    "avg_mean_abs_position_error": 3.2,
-    "avg_podium_hits": 1.6,
-    "avg_baseline_brier_score_win": 0.0382
+    "races_scored": 6,
+    "winner_hit_rate_pct": 50.0,
+    "avg_brier_score_win": 0.0356,
+    "avg_mean_abs_position_error": 3.4,
+    "avg_podium_hits": 1.5,
+    "avg_baseline_brier_score_win": 0.0318
   },
   "calibration_bins": [
     {
       "bin_start": 0,
       "bin_end": 10,
-      "n": 89,
-      "avg_predicted_win_pct": 1.7,
-      "actual_win_rate_pct": 1.1
+      "n": 106,
+      "avg_predicted_win_pct": 1.6,
+      "actual_win_rate_pct": 0.9
     },
     {
       "bin_start": 10,
       "bin_end": 20,
-      "n": 13,
-      "avg_predicted_win_pct": 14.9,
-      "actual_win_rate_pct": 7.7
+      "n": 17,
+      "avg_predicted_win_pct": 14.3,
+      "actual_win_rate_pct": 5.9
     },
     {
       "bin_start": 20,
@@ -198,9 +198,9 @@
     {
       "bin_start": 30,
       "bin_end": 40,
-      "n": 2,
-      "avg_predicted_win_pct": 33.9,
-      "actual_win_rate_pct": 0.0
+      "n": 3,
+      "avg_predicted_win_pct": 34.1,
+      "actual_win_rate_pct": 33.3
     }
   ]
 }
