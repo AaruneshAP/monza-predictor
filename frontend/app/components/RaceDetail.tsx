@@ -104,12 +104,6 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
           )}
         </div>
         <h1 className="text-4xl font-bold mb-4">Race Winner Prediction</h1>
-        <p className="text-neutral-400 max-w-2xl">
-          A Monte Carlo simulation model ({formatNumber(race.n_simulations)}{" "}
-          runs) built on real qualifying pace, historical results at this circuit, and
-          top-speed data — re-weighted per-circuit for overtaking difficulty,
-          downforce level, and tire severity.
-        </p>
         {circuitFacts && (
           <div className="flex flex-wrap gap-x-6 gap-y-1 mt-4 text-sm">
             <span>
