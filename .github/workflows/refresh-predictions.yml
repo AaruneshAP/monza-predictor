@@ -52,15 +52,6 @@ on:
         required: false
         type: string
         default: ""
-      print_schedule:
-        description: >-
-          Diagnostic: print the real FastF1 event schedule next to what
-          circuit_profiles.py assumes per round, to spot a calendar swap
-          (replaced/reshuffled race) that the hardcoded profile table
-          hasn't caught up to. Read-only, no commit. Not for regular use.
-        required: false
-        type: boolean
-        default: false
 
 jobs:
   refresh:
@@ -104,11 +95,6 @@ jobs:
         if: github.event.inputs.backfill_rounds != ''
         working-directory: model
         run: python backfill_round.py ${{ github.event.inputs.backfill_rounds }}
-
-      - name: Print real FastF1 schedule vs circuit_profiles.py (diagnostic)
-        if: github.event.inputs.print_schedule == 'true'
-        working-directory: model
-        run: python print_schedule.py
 
       - name: Commit updated predictions
         if: steps.check.outputs.should_run == 'true' || github.event.inputs.regrade == 'true' || github.event.inputs.predict == 'true' || github.event.inputs.fit_weights == 'true' || github.event.inputs.backfill_rounds != ''
