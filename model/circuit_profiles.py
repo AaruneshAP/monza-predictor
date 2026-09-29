@@ -143,11 +143,28 @@ CIRCUIT_PROFILES = {
         "tire_severity": 0.40,
     },
     16: {
+        # Still officially titled "Bahrain Grand Prix" in the 2026 calendar
+        # (keep event_name as-is — fastf1.get_session(2026, "Bahrain Grand
+        # Prix", ...) needs the real FastF1 EventName to find live
+        # sessions), but relocated to Sepang International Circuit,
+        # Malaysia for 2026 due to the earlier Middle East war making
+        # Bahrain unusable as a venue. FastF1's own schedule confirms this:
+        # round 16's Location field reads "Kuala Lumpur" (its Country field
+        # still says "Bahrain" — stale metadata, not to be trusted here).
+        # historical_key is None, not "Bahrain Grand Prix": pulling the
+        # real Bahrain circuit's 2019-2025 results would be actively wrong
+        # circuit data for a race run at a completely different track.
+        # Sepang itself last raced in 2017 anyway, outside
+        # HISTORICAL_YEARS = range(2019, 2026), so there's no usable
+        # history either way — same "no pre-2026 history" handling as
+        # Madrid (round 14). The three scores below are re-estimated for
+        # Sepang (long straights into hairpins, flowing middle sector,
+        # severe heat/humidity-driven tire wear), not Bahrain's.
         "event_name": "Bahrain Grand Prix",
-        "historical_key": "Bahrain Grand Prix",
-        "overtaking_difficulty": 0.30,
-        "downforce_level": 0.45,
-        "tire_severity": 0.80,
+        "historical_key": None,
+        "overtaking_difficulty": 0.40,
+        "downforce_level": 0.55,
+        "tire_severity": 0.75,
     },
     17: {
         "event_name": "Singapore Grand Prix",

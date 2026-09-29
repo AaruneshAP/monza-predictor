@@ -194,3 +194,30 @@ for it.
 Refit this once more graded rounds exist — 2 races isn't enough to trust,
 and the FastF1 rate-limit ceiling on fully rebuilding the whole archive
 in one CI run should ease as fewer rounds need touching per refit.
+
+### 11. A race can relocate venue while keeping its calendar title
+
+Round 16 kept its official name, "Bahrain Grand Prix," for 2026 while
+actually being held at Sepang International Circuit, Malaysia — Bahrain
+itself unusable as a venue after the earlier Middle East war. Nothing in
+`_season_rounds()` or `load_race_context()` would have caught this on its
+own: `event_name` is used for live-session lookups
+(`fastf1.get_session(2026, "Bahrain Grand Prix", ...)`), which correctly
+finds the real session regardless of physical location, so the round would
+have gone on predicting Q/FP2/results just fine — while silently pulling
+`historical_key: "Bahrain Grand Prix"` (the *real* Bahrain circuit's
+2019–2025 results) and using Bahrain's hand-tuned
+overtaking_difficulty/downforce_level/tire_severity, none of which describe
+Sepang at all. A relocation like this has no structural signal in FastF1's
+schedule that this project checks for — round number, date, and EventName
+all stayed exactly as expected. The one thing that did shift:
+`get_event_schedule()`'s `Location` field, which read "Kuala Lumpur" for
+round 16 while its `Country` field still said "Bahrain" (stale, not
+updated) — an inconsistency worth spot-checking with a one-off script
+comparing FastF1's live schedule fields against `circuit_profiles.py` if a
+real-world calendar/venue change is ever suspected. Fixed by keeping
+`event_name` as "Bahrain Grand Prix" (still correct for session lookups)
+but setting `historical_key: None` and re-estimating the three
+circuit-characteristic scores for Sepang instead of Bahrain — same
+"no usable pre-2026 history" treatment as Madrid (round 14), since Sepang's
+last F1 race (2017) predates `HISTORICAL_YEARS` anyway.
