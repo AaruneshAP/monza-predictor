@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "updated_at": "2026-10-04T16:25:30.477017+00:00",
+  "updated_at": "2026-10-04T20:53:18.999759+00:00",
   "races": [
     {
       "round": 1,
@@ -112,7 +112,7 @@
       "slug": "2026-r16-bahrain-grand-prix",
       "race_name": "Bahrain Grand Prix",
       "race_date": "2026-10-04",
-      "status": "predicted"
+      "status": "completed"
     },
     {
       "round": 17,
@@ -164,36 +164,36 @@
       "status": "not_predicted"
     }
   ],
-  "next_race_slug": "2026-r16-bahrain-grand-prix",
+  "next_race_slug": "2026-r17-singapore-grand-prix",
   "track_record": {
-    "races_scored": 6,
-    "winner_hit_rate_pct": 50.0,
-    "avg_brier_score_win": 0.0356,
-    "avg_mean_abs_position_error": 3.4,
-    "avg_podium_hits": 1.5,
-    "avg_baseline_brier_score_win": 0.0318
+    "races_scored": 7,
+    "winner_hit_rate_pct": 42.9,
+    "avg_brier_score_win": 0.0367,
+    "avg_mean_abs_position_error": 3.41,
+    "avg_podium_hits": 1.57,
+    "avg_baseline_brier_score_win": 0.0273
   },
   "calibration_bins": [
     {
       "bin_start": 0,
       "bin_end": 10,
-      "n": 106,
+      "n": 124,
       "avg_predicted_win_pct": 1.6,
-      "actual_win_rate_pct": 0.9
+      "actual_win_rate_pct": 0.8
     },
     {
       "bin_start": 10,
       "bin_end": 20,
-      "n": 17,
-      "avg_predicted_win_pct": 14.3,
-      "actual_win_rate_pct": 5.9
+      "n": 20,
+      "avg_predicted_win_pct": 14.4,
+      "actual_win_rate_pct": 10.0
     },
     {
       "bin_start": 20,
       "bin_end": 30,
-      "n": 4,
-      "avg_predicted_win_pct": 22.6,
-      "actual_win_rate_pct": 75.0
+      "n": 5,
+      "avg_predicted_win_pct": 23.5,
+      "actual_win_rate_pct": 60.0
     },
     {
       "bin_start": 30,
