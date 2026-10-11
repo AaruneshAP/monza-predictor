@@ -13,3 +13,13 @@
 export function formatBrier(n: number): string {
   return n.toFixed(4);
 }
+
+// A qualifying lap time in seconds, as "M:SS.sss" — the standard F1 timing
+// display (e.g. 83.456 -> "1:23.456"). Every real quali lap in this sport
+// is well over a minute, so this always shows the minutes digit rather
+// than switching format below 60s.
+export function formatLapTime(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const rest = seconds - minutes * 60;
+  return `${minutes}:${rest.toFixed(3).padStart(6, "0")}`;
+}

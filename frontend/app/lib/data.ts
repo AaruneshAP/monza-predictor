@@ -25,6 +25,12 @@ export type PredictionRow = {
   // it if that driver's real grid slot wasn't resolvable (e.g. a gap in
   // the live qualifying data this was generated from).
   grid_position?: number | null;
+  // Qualifying lap time in seconds — the time that actually set
+  // grid_position. Only exists once real qualifying has run (absent
+  // before that, and absent on a race predicted before this field
+  // existed), same as grid_position can be missing for a driver whose
+  // slot wasn't resolvable.
+  quali_time?: number | null;
   win_pct: number;
   // Standard deviation of win_pct across N_CONFIDENCE_BATCHES Monte Carlo
   // batches — this driver's own simulation-estimation noise at this

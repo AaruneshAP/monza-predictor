@@ -120,6 +120,16 @@ def generate(round_number: int, backtest: bool = False, force: bool = False, raw
     grid_position_by_driver = {
         driver: int(pos) for driver, pos in zip(features["driver"], features["grid_pos"]) if pd.notna(pos)
     }
+    # The lap time (seconds) that actually set that grid slot — only exists
+    # once real qualifying has run (build_features() leaves it NaN before
+    # that, since there's no sensible "projected" lap time); absent from a
+    # driver's row entirely rather than null, same as grid_position would
+    # be for a driver whose real slot wasn't resolvable.
+    quali_time_by_driver = {
+        driver: round(float(t), 3)
+        for driver, t in zip(features["driver"], features["quali_time"])
+        if pd.notna(t)
+    }
 
     payload = {
         "year": SEASON_YEAR,
@@ -145,6 +155,7 @@ def generate(round_number: int, backtest: bool = False, force: bool = False, raw
                 "driver": row["driver"],
                 "team": row.get("team", ""),
                 "grid_position": grid_position_by_driver.get(row["driver"]),
+                "quali_time": quali_time_by_driver.get(row["driver"]),
                 "win_pct": row["win_pct"],
                 "win_pct_stdev": row.get("win_pct_stdev"),
                 "podium_pct": row["podium_pct"],
