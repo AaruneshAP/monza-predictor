@@ -47,6 +47,14 @@ SEASON_YEAR = 2026
 HISTORICAL_YEARS = range(2019, 2026)  # 2019-2025 inclusive
 RECENT_ROUNDS_FOR_FORM = 8  # how many of the season's completed rounds to use for "current form"
 
+# Standard F1 points for a finishing position (fastest-lap's extra point is
+# left out — not worth an extra FastF1 lap-data fetch for one point at the
+# margin). Any position not in this map (11th or lower, DNF) scores 0.
+# Used only for the recent-rounds-only points signal blended into
+# season_points_pctile in build_features() — see that blend's comment for
+# why cumulative standings alone aren't enough.
+RACE_POINTS_BY_POSITION = {1: 25, 2: 18, 3: 15, 4: 12, 5: 10, 6: 8, 7: 6, 8: 4, 9: 2, 10: 1}
+
 # Manual grid corrections for known lineup changes FastF1 can't reflect yet
 # — a session that hasn't happened has no roster to read, so a substitution
 # that's already reverting before the *next* round has to be corrected by
@@ -578,12 +586,15 @@ def build_features(raw: dict) -> pd.DataFrame:
       qualifying rank.
     - top_speed_rank: from quali-lap speed-trap data (live if available,
       else season-average).
-    - season_points_pctile: cumulative championship points through the
-      most recent round. This exists because single-race proxies (an
-      8-round tire-degradation slope, a handful of quali top-speed traps)
-      are noisy enough to rank a car with a genuinely strong, consistent
-      season below one that's merely had a couple of clean weekends —
-      points are the season's own aggregate and correct for that.
+    - season_points_pctile: a blend of cumulative championship points
+      through the most recent round (robust, resists single-race noise)
+      and points scored only in the recent-form window (RECENT_ROUNDS_FOR_FORM
+      rounds — sensitive to a team's current trajectory). Cumulative points
+      alone systematically underrate a team that's genuinely gotten faster
+      mid-season but is still digging out of a weak start (and overrate one
+      coasting on points banked early) — the full season aggregate doesn't
+      know which races are recent. Weighted toward the recent window on
+      purpose; see the blend itself for the exact ratio and why.
     - tire_deg_factor: kept a small weight everywhere the underlying
       signal is noisy — the slope estimates are often ~0.01-0.05s/lap on a
       couple dozen stints, not corrected for the fuel-burn effect that
@@ -598,6 +609,7 @@ def build_features(raw: dict) -> pd.DataFrame:
     """
     grid = raw["grid"]
     quali = raw["quali"]
+    race_recent = raw["race"]
     season_points = raw["season_points"]
     historical = raw["historical"]
     tire_deg = raw["tire_deg"]
@@ -671,10 +683,29 @@ def build_features(raw: dict) -> pd.DataFrame:
         feat = feat.sort_values("avg_quali_pos", na_position="last").reset_index(drop=True)
         feat["grid_pos"] = feat.index + 1
 
-    # --- season points percentile: robust full-season competitiveness signal ---
+    # --- season points percentile: full-season standing, blended with recent-form trajectory ---
     points_by_driver = season_points.set_index("driver")["points"]
-    feat["season_points_pctile"] = _pctile(feat["driver"].map(points_by_driver), ascending=True)
-    feat["season_points_pctile"] = feat["season_points_pctile"].fillna(0.0)
+    full_season_pctile = _pctile(feat["driver"].map(points_by_driver), ascending=True)
+    full_season_pctile = full_season_pctile.fillna(0.0)
+
+    # Points scored ONLY in the same recent-rounds window quali/top-speed/
+    # tire/pit already use (race_recent), not cumulative since round 1 —
+    # this is what lets a team's current trajectory (e.g. several recent
+    # podiums after a slow start) move the signal, instead of being
+    # permanently anchored by points banked in the season's first third.
+    # Blended rather than used alone: a pure recent-window signal would
+    # reintroduce the small-sample noise problem cumulative points were
+    # originally added to fix (DEBUGGING.md #2) — 8 races is a better
+    # sample than 1-2, but still noisier than the full season. Weighted
+    # toward recent on purpose, per direct feedback that cumulative
+    # standings alone were ignoring teams' current trajectory.
+    recent_points = race_recent.assign(
+        points=race_recent["finish_pos"].map(RACE_POINTS_BY_POSITION).fillna(0)
+    ).groupby("driver")["points"].sum()
+    recent_points_pctile = _pctile(feat["driver"].map(recent_points), ascending=True)
+    recent_points_pctile = recent_points_pctile.fillna(0.0)
+
+    feat["season_points_pctile"] = 0.4 * full_season_pctile + 0.6 * recent_points_pctile
 
     # --- historical finish at this circuit, per driver, imputed for drivers with no history ---
     hist_avg = historical.groupby("driver")["finish_pos"].mean()

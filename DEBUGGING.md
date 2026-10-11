@@ -221,3 +221,40 @@ but setting `historical_key: None` and re-estimating the three
 circuit-characteristic scores for Sepang instead of Bahrain — same
 "no usable pre-2026 history" treatment as Madrid (round 14), since Sepang's
 last F1 race (2017) predates `HISTORICAL_YEARS` anyway.
+
+### 12. Cumulative season points ignored a team's recent trajectory entirely
+
+`season_points_pctile` (the single largest-weighted term — `points_weight`
+is 0.26 hand-tuned × 3.0 fitted calibration, well above any other term's
+max contribution) came only from `_load_season_points()`'s cumulative
+championship standings since round 1. That's deliberately robust against
+single-race noise (see #2), but it has no concept of "recent" at all — a
+team's points from March count exactly the same as points from last
+weekend. Surfaced directly: ahead of round 17 (Singapore), the model had
+Mercedes drivers (strong early-season points) as win favorites over
+Red Bull despite Red Bull visibly improving over the last several rounds
+and Ferrari locking out the front row in that weekend's actual qualifying
+— cumulative standings couldn't see any of that, because nothing about
+them is recency-weighted.
+
+Fixed by blending in a second points signal computed only from the same
+recent-rounds window (`RECENT_ROUNDS_FOR_FORM`, currently 8 rounds) that
+quali pace, top speed, tire degradation, and pit loss already use —
+`race_recent` (the per-round finish positions from `_load_season_form()`)
+was already being fetched for those other features and sitting unused for
+this one. Each driver's finish positions in that window are converted to
+points via the standard scoring table (fastest-lap's extra point omitted)
+and percentiled the same way as the full-season figure, then blended
+40% full-season / 60% recent-window into `season_points_pctile`. Weighted
+toward recent on purpose, per the actual feedback that prompted this —
+a pure recent-only signal would reintroduce the small-sample noise problem
+cumulative points were added to solve in the first place, but 8 races is a
+large enough window that leaning on it more heavily is defensible. Verified
+with a synthetic two-driver fixture (one dominant in cumulative points but
+scoring zero in the recent window, one the reverse) confirming the recent
+window can now flip the ranking, plus a second fixture with the recent
+window entirely empty (matching the live FastF1 outage active at the time
+of this fix — see the "has not been loaded yet" issue affecting every
+round's season-form fetch) confirming it degrades to the neutral 0.5
+default already used elsewhere rather than crashing or silently zeroing
+someone out.
