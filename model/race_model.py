@@ -378,7 +378,8 @@ def _load_live_session(event_name: str, session_type: str):
 
 
 def _live_quali_features(session) -> pd.DataFrame:
-    """Real grid position + quali-lap top speed, once quali has run.
+    """Real grid position + quali-lap top speed + qualifying time, once
+    quali has run.
 
     Also carries `team` straight from this session's own entry list —
     ground truth for who's actually racing this weekend — so
@@ -387,9 +388,17 @@ def _live_quali_features(session) -> pd.DataFrame:
     instead of being stuck with whatever driver set that projection
     already committed to.
     """
-    df = session.results[["Abbreviation", "Position", "TeamName"]].rename(
+    df = session.results[["Abbreviation", "Position", "TeamName", "Q1", "Q2", "Q3"]].rename(
         columns={"Abbreviation": "driver", "Position": "grid_pos", "TeamName": "team"}
     )
+    # The time that actually set a driver's grid slot: their personal best
+    # in the LAST segment they took part in — Q3 for anyone who reached it,
+    # else Q2, else Q1 for someone eliminated in Q1. FastF1 leaves the
+    # segments a driver didn't reach as NaT, so coalescing Q3 -> Q2 -> Q1
+    # (in that order) picks the right one without needing to know who was
+    # eliminated where.
+    df["quali_time"] = df["Q3"].fillna(df["Q2"]).fillna(df["Q1"]).dt.total_seconds()
+    df = df.drop(columns=["Q1", "Q2", "Q3"])
     try:
         top_speed = session.laps.groupby("Driver")["SpeedST"].max()
         df["top_speed"] = df["driver"].map(top_speed)
@@ -572,7 +581,7 @@ def _pctile(series: pd.Series, ascending: bool = True) -> pd.Series:
 def build_features(raw: dict) -> pd.DataFrame:
     """
     Builds one row per current-grid driver:
-      driver, team, grid_pos, quali_pace_pctile, top_speed_rank,
+      driver, team, grid_pos, quali_time, quali_pace_pctile, top_speed_rank,
       season_points_pctile, historical_avg_finish, tire_deg_factor,
       pit_delta, slipstream_factor
 
@@ -584,6 +593,11 @@ def build_features(raw: dict) -> pd.DataFrame:
     - grid_pos: uses the real grid once qualifying has actually run
       (raw["live_quali"]); until then it's projected from season-average
       qualifying rank.
+    - quali_time: the lap time (seconds) that actually set a driver's grid
+      slot — their personal best in the last segment they reached (Q3 if
+      they got there, else Q2, else Q1). Only exists once real qualifying
+      has run; NaN before that (no sensible "projected" lap time), which
+      generate_predictions.py writes out as an absent field.
     - top_speed_rank: from quali-lap speed-trap data (live if available,
       else season-average).
     - season_points_pctile: a blend of cumulative championship points
@@ -682,6 +696,11 @@ def build_features(raw: dict) -> pd.DataFrame:
         feat["top_speed_rank"] = _pctile(feat["avg_top_speed"], ascending=True)
         feat = feat.sort_values("avg_quali_pos", na_position="last").reset_index(drop=True)
         feat["grid_pos"] = feat.index + 1
+        # No real lap time exists before qualifying has actually run — unlike
+        # grid_pos and top_speed, there's no sensible "projected" stand-in
+        # for a lap time, so this stays NaN (-> absent once generate_predictions.py
+        # writes it) until the live-quali branch above populates it for real.
+        feat["quali_time"] = np.nan
 
     # --- season points percentile: full-season standing, blended with recent-form trajectory ---
     points_by_driver = season_points.set_index("driver")["points"]
@@ -735,6 +754,7 @@ def build_features(raw: dict) -> pd.DataFrame:
             "driver",
             "team",
             "grid_pos",
+            "quali_time",
             "quali_pace_pctile",
             "top_speed_rank",
             "season_points_pctile",

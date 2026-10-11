@@ -1,4 +1,5 @@
 import type { PredictionRow } from "../lib/data";
+import { formatLapTime } from "../lib/format";
 import { teamColor } from "../lib/teamColors";
 
 /** Converts a hex color like "#E8002D" to "r, g, b" for use inside an
@@ -60,6 +61,9 @@ export default function StartingGridLadder({ predicted }: { predicted: Predictio
             <span className="text-[10px] text-neutral-500 font-mono">P{row.grid_position ?? row.position}</span>
             <p className="text-xl font-bold text-neutral-50 leading-tight mt-1">{row.driver}</p>
             <p className="text-xs text-neutral-400 truncate">{row.team}</p>
+            {row.quali_time != null && (
+              <p className="text-[11px] text-neutral-500 font-mono mt-0.5">{formatLapTime(row.quali_time)}</p>
+            )}
           </div>
         );
       })}
