@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "updated_at": "2026-10-11T12:05:33.155118+00:00",
+  "updated_at": "2026-10-11T19:21:35.153684+00:00",
   "races": [
     {
       "round": 1,
@@ -119,7 +119,7 @@
       "slug": "2026-r17-singapore-grand-prix",
       "race_name": "Singapore Grand Prix",
       "race_date": "2026-10-11",
-      "status": "predicted"
+      "status": "completed"
     },
     {
       "round": 18,
@@ -164,36 +164,36 @@
       "status": "not_predicted"
     }
   ],
-  "next_race_slug": "2026-r17-singapore-grand-prix",
+  "next_race_slug": "2026-r18-united-states-grand-prix",
   "track_record": {
-    "races_scored": 7,
-    "winner_hit_rate_pct": 42.9,
-    "avg_brier_score_win": 0.0367,
-    "avg_mean_abs_position_error": 3.41,
-    "avg_podium_hits": 1.57,
-    "avg_baseline_brier_score_win": 0.0273
+    "races_scored": 8,
+    "winner_hit_rate_pct": 37.5,
+    "avg_brier_score_win": 0.036,
+    "avg_mean_abs_position_error": 3.3,
+    "avg_podium_hits": 1.75,
+    "avg_baseline_brier_score_win": 0.0239
   },
   "calibration_bins": [
     {
       "bin_start": 0,
       "bin_end": 10,
-      "n": 124,
+      "n": 143,
       "avg_predicted_win_pct": 1.6,
-      "actual_win_rate_pct": 0.8
+      "actual_win_rate_pct": 0.7
     },
     {
       "bin_start": 10,
       "bin_end": 20,
-      "n": 20,
-      "avg_predicted_win_pct": 14.4,
-      "actual_win_rate_pct": 10.0
+      "n": 21,
+      "avg_predicted_win_pct": 14.5,
+      "actual_win_rate_pct": 9.5
     },
     {
       "bin_start": 20,
       "bin_end": 30,
-      "n": 5,
-      "avg_predicted_win_pct": 23.5,
-      "actual_win_rate_pct": 60.0
+      "n": 7,
+      "avg_predicted_win_pct": 23.7,
+      "actual_win_rate_pct": 57.1
     },
     {
       "bin_start": 30,
