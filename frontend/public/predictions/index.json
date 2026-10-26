@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "updated_at": "2026-10-25T23:03:10.027994+00:00",
+  "updated_at": "2026-10-26T03:07:18.524207+00:00",
   "races": [
     {
       "round": 1,
@@ -133,7 +133,7 @@
       "slug": "2026-r19-mexico-city-grand-prix",
       "race_name": "Mexico City Grand Prix",
       "race_date": "2026-11-01",
-      "status": "not_predicted"
+      "status": "predicted"
     },
     {
       "round": 20,
