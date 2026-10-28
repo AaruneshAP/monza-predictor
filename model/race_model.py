@@ -468,6 +468,50 @@ def _historical_rain_probability(historical_key: str | None) -> float:
     return round(wet_count / total, 2) if total else 0.10
 
 
+# Fallback used by _historical_safety_car_probability() when a circuit has
+# no usable historical data (new circuit, or every historical fetch
+# failed) — a commonly-cited real-world figure for the rough share of
+# modern F1 races that see at least one full Safety Car or Virtual Safety
+# Car period, not derived from this project's own data.
+DEFAULT_SAFETY_CAR_PROBABILITY = 0.60
+
+
+def _historical_safety_car_probability(historical_key: str | None) -> float:
+    """Fraction of the historical races at this circuit that had at least
+    one Safety Car or Virtual Safety Car period — used by the undercut
+    simulator (see simulate_undercut()) as the base risk that a stop
+    becomes "free" for the rival mid-undercut, erasing the undercutter's
+    gain. Falls back to DEFAULT_SAFETY_CAR_PROBABILITY for a circuit with
+    no history. Uses the same verified-session pattern as
+    _historical_rain_probability() (same years, same fuzzy-match guard);
+    deliberately a separate historical fetch rather than folded into that
+    function, so this stays additive and can't regress the already-working
+    rain-probability path.
+
+    FastF1's track status codes: '1' AllClear, '2' Yellow, '4' SCDeployed,
+    '5' Red, '6' VSCDeployed, '7' VSCEnding — '4' and '6' both count here,
+    full SC and VSC alike, since either one similarly nullifies a rival's
+    pit-stop time loss.
+    """
+    if historical_key is None:
+        return DEFAULT_SAFETY_CAR_PROBABILITY
+    sc_count, total = 0, 0
+    for year in HISTORICAL_YEARS:
+        try:
+            session = fastf1.get_session(year, historical_key, "R")
+            if session.event["EventName"] != historical_key:
+                continue  # fastf1 fuzzy-matched to a different race — see _get_verified_session
+            session.load(laps=False, telemetry=False, weather=False, messages=False)
+            if session.track_status is None or session.track_status.empty:
+                continue
+            total += 1
+            if session.track_status["Status"].isin(["4", "6"]).any():
+                sc_count += 1
+        except Exception:
+            continue
+    return round(sc_count / total, 2) if total else DEFAULT_SAFETY_CAR_PROBABILITY
+
+
 def load_race_context(round_number: int, cache_dir: str = "./fastf1_cache", backtest: bool = False) -> dict:
     """Pulls historical + current-season context for `round_number` via
     FastF1. Returns a dict of raw DataFrames consumed by build_features().
@@ -532,6 +576,9 @@ def load_race_context(round_number: int, cache_dir: str = "./fastf1_cache", back
     print(f"Estimating rain probability from {event_name} weather history...")
     rain_probability = _historical_rain_probability(profile["historical_key"])
 
+    print(f"Estimating safety car probability from {event_name} track-status history...")
+    safety_car_probability = _historical_safety_car_probability(profile["historical_key"])
+
     return {
         "round_number": round_number,
         "event_name": event_name,
@@ -548,6 +595,7 @@ def load_race_context(round_number: int, cache_dir: str = "./fastf1_cache", back
         "grid_source": grid_source,
         "tire_deg_source": tire_deg_source,
         "rain_probability": rain_probability,
+        "safety_car_probability": safety_car_probability,
     }
 
 
@@ -1032,6 +1080,137 @@ def monte_carlo_simulate(
         )
 
     return pd.DataFrame(summary).sort_values("win_pct", ascending=False)
+
+
+# ---------------------------------------------------------------
+# 3b. UNDERCUT / PIT-WINDOW SIMULATOR
+# ---------------------------------------------------------------
+
+# A generic modern-F1 race distance, used only to scale a circuit's
+# per-race safety car probability down to a probability over the shorter
+# undercut window below (a SC is roughly as likely to fall in any given
+# lap of the race, so a 3-lap window carries ~3/55ths of the per-race risk).
+TYPICAL_RACE_LAPS = 55
+
+# The undercut is modeled as a fixed-length window (driver A pits this many
+# laps before rival B), not a user-adjustable lap count — matches the
+# product spec, where the viewer picks which two drivers, not simulation
+# parameters.
+UNDERCUT_WINDOW_LAPS = 3
+
+# Fallbacks for a driver with no measured pit_delta/tire_deg this season
+# (new driver, or the live-session data this project depends on is down —
+# see DEBUGGING.md #12-#15). Sourced from this project's own documented
+# historical figures, not invented: DEBUGGING.md #1 measured real pit
+# stops losing ~17-25s; DEBUGGING.md #3 measured tire-deg slopes of
+# ~0.01-0.05s/lap. Picking the upper end of each range errs toward a
+# believable, representative driver rather than a best case.
+DEFAULT_PIT_LOSS_S = 20.0
+DEFAULT_TIRE_DEG_SLOPE_S = 0.05
+
+# Both drivers eventually pit — A now, B later — so the full pit-stop
+# loss mostly cancels between them and isn't itself what decides an
+# undercut; only the *difference* between A's and B's own stop costs is
+# a real net cost to A. What actually wins an undercut is the pace
+# advantage of being on fresh tires while the rival is still out there
+# wearing theirs down — a commonly-cited real-world figure for that
+# fresh-vs-a-few-laps-old pace gap, not derived from this project's own
+# data (same category as DEFAULT_SAFETY_CAR_PROBABILITY above).
+FRESH_TIRE_PACE_ADVANTAGE_S_PER_LAP = 0.4
+
+# Per-simulation noise on the sampled pit-stop losses and tire-deg rate —
+# real pit stops and tire wear aren't perfectly repeatable lap to lap,
+# and a simulator with zero variance on its inputs would just compute one
+# deterministic answer instead of a probability.
+PIT_LOSS_STDEV_S = 1.5
+TIRE_DEG_NOISE_STDEV = 0.25  # relative noise on the sampled per-lap slope
+
+
+def _driver_pit_loss(pit_delta: pd.DataFrame, driver: str) -> float:
+    """Mean measured pit-stop time loss (raw seconds) for `driver` this
+    season, falling back to DEFAULT_PIT_LOSS_S when they have no measured
+    stops (new driver, or this season's live data hasn't loaded)."""
+    matches = pit_delta.loc[pit_delta["driver"] == driver, "loss"]
+    return float(matches.mean()) if not matches.empty else DEFAULT_PIT_LOSS_S
+
+
+def _driver_tire_deg_slope(tire_deg: pd.DataFrame, driver: str) -> float:
+    """Mean measured tire degradation slope (raw seconds/lap) for `driver`
+    this season, falling back to DEFAULT_TIRE_DEG_SLOPE_S when unmeasured."""
+    matches = tire_deg.loc[tire_deg["driver"] == driver, "slope"]
+    return float(matches.mean()) if not matches.empty else DEFAULT_TIRE_DEG_SLOPE_S
+
+
+def simulate_undercut(
+    undercut_driver: str,
+    rival_driver: str,
+    pit_delta: pd.DataFrame,
+    tire_deg: pd.DataFrame,
+    safety_car_probability: float,
+    window_laps: int = UNDERCUT_WINDOW_LAPS,
+    n_sims: int = 20_000,
+    random_seed: int = 42,
+) -> dict:
+    """Estimates the probability that `undercut_driver` pitting
+    `window_laps` laps before `rival_driver` comes out ahead.
+
+    For each simulation:
+      1. Draw each driver's own pit-stop time loss from a normal
+         distribution around their measured mean (or the fallback). Both
+         drivers pit eventually — A now, B `window_laps` later — so only
+         the *difference* between their stop costs is a real net cost to
+         A; a near-identical stop cost nets to roughly zero.
+      2. Draw whether a Safety Car falls inside the undercut window, at a
+         probability scaled from the circuit's per-race historical rate —
+         a SC during the window makes the rival's eventual stop
+         effectively free, erasing whatever advantage the undercutter
+         built, so it forces the undercut to fail outright regardless of
+         pace.
+      3. Otherwise, draw the pace advantage of being on fresh tires while
+         the rival wears theirs down over the window: a literature-typical
+         fresh-tire gap (FRESH_TIRE_PACE_ADVANTAGE_S_PER_LAP) plus the
+         rival's own measured degradation slope (or the fallback),
+         compounded over window_laps.
+      4. The undercut succeeds in this simulation if that pace advantage
+         exceeds the net pit-stop cost difference.
+
+    Mirrors monte_carlo_simulate()'s approach (per-simulation random draws,
+    aggregate across n_sims) rather than a parallel simulation engine, but
+    is written independently since the question and mechanics differ from
+    the main race-finish simulation.
+
+    Returns the aggregate success probability plus the inputs that drove
+    it, for the frontend's "what's driving this number" explanation.
+    """
+    rng = np.random.default_rng(random_seed)
+
+    pit_loss_mean_a = _driver_pit_loss(pit_delta, undercut_driver)
+    pit_loss_mean_b = _driver_pit_loss(pit_delta, rival_driver)
+    tire_deg_slope = _driver_tire_deg_slope(tire_deg, rival_driver)
+    window_sc_probability = min(1.0, safety_car_probability * window_laps / TYPICAL_RACE_LAPS)
+
+    pit_losses_a = rng.normal(pit_loss_mean_a, PIT_LOSS_STDEV_S, n_sims).clip(min=0)
+    pit_losses_b = rng.normal(pit_loss_mean_b, PIT_LOSS_STDEV_S, n_sims).clip(min=0)
+    pace_advantage_per_lap = FRESH_TIRE_PACE_ADVANTAGE_S_PER_LAP + tire_deg_slope
+    tire_deg_gains = (
+        pace_advantage_per_lap
+        * window_laps
+        * rng.normal(1.0, TIRE_DEG_NOISE_STDEV, n_sims).clip(min=0)
+    )
+    safety_car_hits = rng.random(n_sims) < window_sc_probability
+
+    net_gain = tire_deg_gains - (pit_losses_a - pit_losses_b)
+    success = (~safety_car_hits) & (net_gain > 0)
+
+    return {
+        "undercut_driver": undercut_driver,
+        "rival_driver": rival_driver,
+        "window_laps": window_laps,
+        "success_pct": round(float(success.mean()) * 100, 1),
+        "safety_car_window_pct": round(window_sc_probability * 100, 1),
+        "pit_loss_s": round(pit_loss_mean_a, 1),
+        "tire_deg_slope_s_per_lap": round(tire_deg_slope, 3),
+    }
 
 
 # ---------------------------------------------------------------

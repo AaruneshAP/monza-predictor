@@ -3,6 +3,7 @@ import path from "path";
 
 const PREDICTIONS_DIR = path.join(process.cwd(), "public", "predictions");
 const TELEMETRY_DIR = path.join(process.cwd(), "public", "telemetry");
+const STRATEGY_DIR = path.join(process.cwd(), "public", "strategy");
 
 export type ContributionTerm = {
   key: string;
@@ -228,6 +229,46 @@ export type TelemetryFile = {
  * manual `telemetry` dispatch input) and won't exist for every race. */
 export function getTelemetry(slug: string): TelemetryFile | null {
   const p = path.join(TELEMETRY_DIR, `${slug}.json`);
+  if (!fs.existsSync(p)) return null;
+  return JSON.parse(fs.readFileSync(p, "utf-8"));
+}
+
+// --- Strategy / undercut simulator (model/generate_strategy.py) ---
+// Reuses the Monte Carlo approach from race_model.py's monte_carlo_simulate()
+// to estimate undercut success for every ordered pair among the top
+// predicted drivers — see simulate_undercut()'s docstring for the model.
+
+export type StrategyDriver = {
+  driver: string;
+  team: string;
+};
+
+export type UndercutPair = {
+  undercut_driver: string;
+  rival_driver: string;
+  window_laps: number;
+  success_pct: number;
+  safety_car_window_pct: number;
+  pit_loss_s: number;
+  tire_deg_slope_s_per_lap: number;
+};
+
+export type StrategyFile = {
+  year: number;
+  round: number;
+  race_name: string;
+  slug: string;
+  race_date: string;
+  generated_at: string;
+  window_laps: number;
+  safety_car_probability_pct: number;
+  drivers: StrategyDriver[];
+  pairs: UndercutPair[];
+};
+
+/** Null when this race has no strategy file yet (predates this feature). */
+export function getStrategy(slug: string): StrategyFile | null {
+  const p = path.join(STRATEGY_DIR, `${slug}.json`);
   if (!fs.existsSync(p)) return null;
   return JSON.parse(fs.readFileSync(p, "utf-8"));
 }

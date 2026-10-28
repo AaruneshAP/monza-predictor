@@ -127,6 +127,7 @@ jobs:
           git config user.email "actions@github.com"
           git add frontend/public/predictions/
           if [ -d frontend/public/telemetry ]; then git add frontend/public/telemetry/; fi
+          if [ -d frontend/public/strategy ]; then git add frontend/public/strategy/; fi
           if [ -f model/fitted_weights.json ]; then git add model/fitted_weights.json; fi
           git diff --staged --quiet || git commit -m "Refresh predictions"
           git push
