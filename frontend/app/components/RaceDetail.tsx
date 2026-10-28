@@ -71,7 +71,15 @@ function ContributionBreakdown({ contributions }: { contributions: Contributions
   );
 }
 
-export default function RaceDetail({ race, hasTelemetry }: { race: RaceFile; hasTelemetry: boolean }) {
+export default function RaceDetail({
+  race,
+  hasTelemetry,
+  hasStrategy,
+}: {
+  race: RaceFile;
+  hasTelemetry: boolean;
+  hasStrategy: boolean;
+}) {
   // Recharts' ErrorBar needs a plain numeric dataKey — fall back to 0 (no
   // visible bar) for a race predicted before win_pct_stdev existed rather
   // than passing it null/undefined.
@@ -102,6 +110,16 @@ export default function RaceDetail({ race, hasTelemetry }: { race: RaceFile; has
             <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded border border-accent/40 text-accent">
               Graded
             </span>
+          )}
+          {hasStrategy && (
+            <Link
+              href={`/race/${race.slug}/strategy`}
+              className={`text-xs px-2 py-1 rounded border border-neutral-700 text-neutral-400 hover:text-accent hover:border-accent/40 ${
+                hasTelemetry ? "" : "ml-auto"
+              }`}
+            >
+              Strategy →
+            </Link>
           )}
           {hasTelemetry && (
             <Link

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getFeaturedRace, getTelemetry } from "./lib/data";
+import { getFeaturedRace, getStrategy, getTelemetry } from "./lib/data";
 import RaceDetail from "./components/RaceDetail";
 
 export function generateMetadata(): Metadata {
@@ -16,5 +16,6 @@ export function generateMetadata(): Metadata {
 export default function Home() {
   const race = getFeaturedRace();
   const hasTelemetry = getTelemetry(race.slug) !== null;
-  return <RaceDetail race={race} hasTelemetry={hasTelemetry} />;
+  const hasStrategy = getStrategy(race.slug) !== null;
+  return <RaceDetail race={race} hasTelemetry={hasTelemetry} hasStrategy={hasStrategy} />;
 }

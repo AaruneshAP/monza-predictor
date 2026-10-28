@@ -28,6 +28,7 @@ import fastf1
 import pandas as pd
 
 import archive
+from generate_strategy import write_strategy
 from race_model import (
     SEASON_YEAR,
     build_features,
@@ -171,6 +172,9 @@ def generate(round_number: int, backtest: bool = False, force: bool = False, raw
 
     archive.write_race(meta["slug"], payload)
     print(f"Wrote {len(payload['predicted'])} driver predictions to {archive.race_path(meta['slug'])}")
+
+    write_strategy(meta["slug"], meta, raw, predictions)
+
     return meta["slug"]
 
 
