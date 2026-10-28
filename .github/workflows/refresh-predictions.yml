@@ -52,6 +52,16 @@ on:
         required: false
         type: string
         default: ""
+      telemetry:
+        description: >-
+          Pull lap-telemetry comparisons (model/generate_telemetry.py) for
+          every completed round that doesn't have one yet, writing
+          frontend/public/telemetry/{slug}.json. Heavier than a normal
+          refresh (loads full qualifying telemetry, not just results), so
+          this is manual-only rather than part of the regular schedule.
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   refresh:
@@ -96,12 +106,18 @@ jobs:
         working-directory: model
         run: python backfill_round.py ${{ github.event.inputs.backfill_rounds }}
 
+      - name: Pull lap telemetry for completed rounds (manual)
+        if: github.event.inputs.telemetry == 'true'
+        working-directory: model
+        run: python generate_telemetry.py
+
       - name: Commit updated predictions
-        if: steps.check.outputs.should_run == 'true' || github.event.inputs.regrade == 'true' || github.event.inputs.predict == 'true' || github.event.inputs.fit_weights == 'true' || github.event.inputs.backfill_rounds != ''
+        if: steps.check.outputs.should_run == 'true' || github.event.inputs.regrade == 'true' || github.event.inputs.predict == 'true' || github.event.inputs.fit_weights == 'true' || github.event.inputs.backfill_rounds != '' || github.event.inputs.telemetry == 'true'
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add frontend/public/predictions/
+          git add frontend/public/telemetry/
           if [ -f model/fitted_weights.json ]; then git add model/fitted_weights.json; fi
           git diff --staged --quiet || git commit -m "Refresh predictions"
           git push

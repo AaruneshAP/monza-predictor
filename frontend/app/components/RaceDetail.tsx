@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Fragment, useState } from "react";
 import { BarChart, Bar, ErrorBar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import type { Contributions, RaceFile } from "../lib/data";
@@ -70,7 +71,7 @@ function ContributionBreakdown({ contributions }: { contributions: Contributions
   );
 }
 
-export default function RaceDetail({ race }: { race: RaceFile }) {
+export default function RaceDetail({ race, hasTelemetry }: { race: RaceFile; hasTelemetry: boolean }) {
   // Recharts' ErrorBar needs a plain numeric dataKey — fall back to 0 (no
   // visible bar) for a race predicted before win_pct_stdev existed rather
   // than passing it null/undefined.
@@ -101,6 +102,14 @@ export default function RaceDetail({ race }: { race: RaceFile }) {
             <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded border border-accent/40 text-accent">
               Graded
             </span>
+          )}
+          {hasTelemetry && (
+            <Link
+              href={`/race/${race.slug}/telemetry`}
+              className="ml-auto text-xs px-2 py-1 rounded border border-neutral-700 text-neutral-400 hover:text-accent hover:border-accent/40"
+            >
+              Telemetry →
+            </Link>
           )}
         </div>
         <h1 className="text-4xl font-bold mb-4">Race Winner Prediction</h1>

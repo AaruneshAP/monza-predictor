@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 
 const PREDICTIONS_DIR = path.join(process.cwd(), "public", "predictions");
+const TELEMETRY_DIR = path.join(process.cwd(), "public", "telemetry");
 
 export type ContributionTerm = {
   key: string;
@@ -170,4 +171,63 @@ export function getFeaturedRace(): RaceFile {
     throw new Error("No predicted races in the archive yet — run model/generate_predictions.py.");
   }
   return getRace(slug);
+}
+
+// --- Telemetry (model/generate_telemetry.py) ---
+// One driver's single fastest qualifying lap, not a whole session — see
+// that script's docstring for why a flying lap is what makes a
+// speed-vs-distance comparison between drivers apples-to-apples.
+
+export type TelemetrySpeedPoint = {
+  distance_m: number;
+  speed_kph: number;
+  throttle_pct: number;
+  brake_frac: number;
+  drs_open: boolean;
+};
+
+export type TelemetrySectorSpeed = {
+  // 1, 2, or 3 — thirds of this driver's OWN lap distance, not the
+  // circuit's official timing sectors (FastF1 doesn't expose those as
+  // distance markers, only as times) — see telemetry/queries.sql.
+  sector: number;
+  avg_speed_kph: number;
+};
+
+export type TelemetryBrakingPoint = {
+  distance_m: number;
+  speed_kph: number;
+};
+
+export type TelemetryDriver = {
+  driver: string;
+  team: string;
+  lap_time_s: number;
+  sector1_s: number | null;
+  sector2_s: number | null;
+  sector3_s: number | null;
+  compound: string | null;
+  sector_speed: TelemetrySectorSpeed[];
+  drs_pct_of_lap: number | null;
+  braking_points: TelemetryBrakingPoint[];
+  speed_trace: TelemetrySpeedPoint[];
+};
+
+export type TelemetryFile = {
+  year: number;
+  round: number;
+  race_name: string;
+  slug: string;
+  session: string;
+  generated_at: string;
+  drivers: TelemetryDriver[];
+};
+
+/** Null when this race has no telemetry file yet — telemetry is
+ * backfilled separately from predictions (see refresh-predictions.yml's
+ * manual `telemetry` dispatch input) and won't exist for every race. */
+export function getTelemetry(slug: string): TelemetryFile | null {
+  const p = path.join(TELEMETRY_DIR, `${slug}.json`);
+  if (!fs.existsSync(p)) return null;
+  return JSON.parse(fs.readFileSync(p, "utf-8"));
 }
