@@ -296,22 +296,30 @@ def generate(round_number: int, force: bool = False) -> str:
     lap_rows = []
     sample_rows = []
     for driver in drivers:
-        driver_laps = quali.laps.pick_driver(driver)
-        if driver_laps.empty:
-            print(f"  [telemetry] {driver}: no quali laps found, skipping")
-            continue
-        fastest = driver_laps.pick_fastest()
-        if fastest is None or pd.isna(fastest.get("LapTime")):
-            print(f"  [telemetry] {driver}: no valid fastest lap, skipping")
-            continue
-
+        # The whole FastF1 attempt — lap selection through telemetry — is
+        # one try/except, not split across several. Confirmed live: the
+        # live-timing outage behind DEBUGGING.md #12/#13 can take out
+        # quali.laps ITSELF (not just the deeper car_data/position_data
+        # channel this originally assumed only car telemetry would lose),
+        # so `quali.laps.pick_driver(driver)` is just as likely to raise
+        # DataNotLoadedError as `fastest.get_telemetry()` is — there's no
+        # safe call in this chain to leave unwrapped.
         tel = None
+        fastest = None
         try:
+            driver_laps = quali.laps.pick_driver(driver)
+            if driver_laps.empty:
+                print(f"  [telemetry] {driver}: no quali laps found, skipping")
+                continue
+            fastest = driver_laps.pick_fastest()
+            if fastest is None or pd.isna(fastest.get("LapTime")):
+                print(f"  [telemetry] {driver}: no valid fastest lap, skipping")
+                continue
             tel = fastest.get_telemetry().add_distance()
             if tel.empty:
                 tel = None
         except Exception as exc:
-            print(f"  [telemetry] {driver}: FastF1 has no car telemetry for this lap ({exc}) — trying OpenF1...")
+            print(f"  [telemetry] {driver}: FastF1 has nothing usable for this lap ({exc}) — trying OpenF1...")
 
         if tel is not None:
             lap_rows.append(
@@ -339,8 +347,9 @@ def generate(round_number: int, force: bool = False) -> str:
                 )
             continue
 
-        # FastF1 has no car telemetry for this lap — fall back to OpenF1,
-        # an independently hosted data source with its own pipeline, not
+        # FastF1 has nothing usable for this driver's lap (anywhere from
+        # lap selection to car telemetry) — fall back to OpenF1, an
+        # independently hosted data source with its own pipeline, not
         # FastF1's, so the two don't share a single point of failure
         # (see DEBUGGING.md for the FastF1-side outage this works around).
         if openf1_session_key is None:
