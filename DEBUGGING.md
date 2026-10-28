@@ -296,3 +296,40 @@ API — this sandbox's own network policy blocks api.openf1.org outright
 (a 403 at the egress proxy), so the only way to confirm it actually works
 is the next real GitHub Actions `telemetry` dispatch, which does have
 unrestricted internet access.
+
+### 14. #13's premise was wrong: FastF1 lost `quali.laps` itself, not just car telemetry
+
+The actual dispatch after #13's fallback shipped still failed every
+round, with the OpenF1 fallback never once triggering. Chased it down
+with a real traceback (added for exactly this — `str(exc)` alone kept
+giving the same generic message regardless of which line raised it) and
+found the failure one level earlier than assumed:
+
+```
+driver_laps = quali.laps.pick_driver(driver)
+  File ".../fastf1/core.py", line 1276, in laps
+    return self._get_property_warn_not_loaded("_laps")
+fastf1.exceptions.DataNotLoadedError: ...has not been loaded yet
+```
+
+`quali.laps` itself raises — `quali.load(laps=True, telemetry=True, ...)`
+never actually populated lap data for this session at all. #13's "lap
+results, sector times, compound all load fine, only car_data doesn't"
+was never verified, just assumed from how a *different* FastF1 call
+elsewhere in this project (check_results.py's race-session loads) had
+been behaving — a different session type, not evidence about qualifying
+sessions during this same live-timing outage. Lap construction itself
+depends on the same `_extended_timing_data` feed that was already
+logging "Failed to load timing data!" warnings right above the
+traceback, so of course `.laps` came back empty too.
+
+Fixed by widening the try/except in `generate_telemetry.py`'s per-driver
+loop to cover the whole FastF1 attempt — `quali.laps.pick_driver()`
+through `fastest.get_telemetry()` — instead of just the telemetry call,
+so ANY failure anywhere in that chain now falls through to the OpenF1
+fallback (which independently sources lap selection, sector times, and
+compound too, not just car telemetry — see #13). The lesson generalizing
+past this one bug: when a live upstream feed is known to be
+intermittently down, don't assume which *specific* calls against it will
+fail based on a different call's behavior — wrap the whole dependent
+chain, not just the piece that failed last time.
