@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getAllPredictedSlugs, getRace } from "../../lib/data";
+import { getAllPredictedSlugs, getRace, getTelemetry } from "../../lib/data";
 import RaceDetail from "../../components/RaceDetail";
 
 export function generateStaticParams() {
@@ -19,5 +19,6 @@ export async function generateMetadata({
 export default async function RacePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const race = getRace(slug);
-  return <RaceDetail race={race} />;
+  const hasTelemetry = getTelemetry(slug) !== null;
+  return <RaceDetail race={race} hasTelemetry={hasTelemetry} />;
 }
