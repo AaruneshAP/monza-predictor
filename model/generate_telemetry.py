@@ -37,6 +37,7 @@ import json
 import os
 import re
 import sqlite3
+import traceback
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -478,7 +479,14 @@ def main():
         try:
             generate(r["round"], force=args.force)
         except Exception as exc:
-            print(f"  [telemetry] round {r['round']} failed: {exc}")
+            # Full traceback, not just str(exc) — every round so far has
+            # failed with the same generic DataNotLoadedError message
+            # regardless of which line actually raised it, which isn't
+            # enough to tell "the per-driver OpenF1 fallback path has a
+            # bug" apart from "something before the per-driver loop even
+            # starts is raising."
+            print(f"  [telemetry] round {r['round']} failed:")
+            traceback.print_exc()
 
 
 if __name__ == "__main__":

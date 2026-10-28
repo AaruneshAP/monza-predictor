@@ -109,6 +109,15 @@ jobs:
       - name: Pull lap telemetry for completed rounds (manual)
         if: github.event.inputs.telemetry == 'true'
         working-directory: model
+        env:
+          # Unbuffered stdout — otherwise print() output is held back
+          # until the whole process exits while FastF1's own logging
+          # module output flushes immediately, so the two interleave
+          # wildly out of real chronological order in the captured log
+          # (confirmed: every print() from an 8-round run landed bunched
+          # together at the very end). Makes a traceback meaningfully
+          # readable alongside the FastF1 log lines around it.
+          PYTHONUNBUFFERED: "1"
         run: python generate_telemetry.py
 
       - name: Commit updated predictions
