@@ -1,0 +1,550 @@
+{
+  "year": 2026,
+  "round": 19,
+  "race_name": "Mexico City Grand Prix",
+  "slug": "2026-r19-mexico-city-grand-prix",
+  "race_date": "2026-11-01",
+  "generated_at": "2026-10-28T15:15:27.014571+00:00",
+  "window_laps": 3,
+  "safety_car_probability_pct": 60.0,
+  "drivers": [
+    {
+      "driver": "ANT",
+      "team": "Mercedes"
+    },
+    {
+      "driver": "VER",
+      "team": "Red Bull"
+    },
+    {
+      "driver": "RUS",
+      "team": "Mercedes"
+    },
+    {
+      "driver": "LEC",
+      "team": "Ferrari"
+    },
+    {
+      "driver": "NOR",
+      "team": "McLaren"
+    },
+    {
+      "driver": "HAM",
+      "team": "Ferrari"
+    },
+    {
+      "driver": "PIA",
+      "team": "McLaren"
+    },
+    {
+      "driver": "HAD",
+      "team": "Red Bull"
+    }
+  ],
+  "pairs": [
+    {
+      "undercut_driver": "ANT",
+      "rival_driver": "VER",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "ANT",
+      "rival_driver": "RUS",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "ANT",
+      "rival_driver": "LEC",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "ANT",
+      "rival_driver": "NOR",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "ANT",
+      "rival_driver": "HAM",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "ANT",
+      "rival_driver": "PIA",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "ANT",
+      "rival_driver": "HAD",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "VER",
+      "rival_driver": "ANT",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "VER",
+      "rival_driver": "RUS",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "VER",
+      "rival_driver": "LEC",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "VER",
+      "rival_driver": "NOR",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "VER",
+      "rival_driver": "HAM",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "VER",
+      "rival_driver": "PIA",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "VER",
+      "rival_driver": "HAD",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "RUS",
+      "rival_driver": "ANT",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "RUS",
+      "rival_driver": "VER",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "RUS",
+      "rival_driver": "LEC",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "RUS",
+      "rival_driver": "NOR",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "RUS",
+      "rival_driver": "HAM",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "RUS",
+      "rival_driver": "PIA",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "RUS",
+      "rival_driver": "HAD",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "LEC",
+      "rival_driver": "ANT",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "LEC",
+      "rival_driver": "VER",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "LEC",
+      "rival_driver": "RUS",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "LEC",
+      "rival_driver": "NOR",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "LEC",
+      "rival_driver": "HAM",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "LEC",
+      "rival_driver": "PIA",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "LEC",
+      "rival_driver": "HAD",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "NOR",
+      "rival_driver": "ANT",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "NOR",
+      "rival_driver": "VER",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "NOR",
+      "rival_driver": "RUS",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "NOR",
+      "rival_driver": "LEC",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "NOR",
+      "rival_driver": "HAM",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "NOR",
+      "rival_driver": "PIA",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "NOR",
+      "rival_driver": "HAD",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "HAM",
+      "rival_driver": "ANT",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "HAM",
+      "rival_driver": "VER",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "HAM",
+      "rival_driver": "RUS",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "HAM",
+      "rival_driver": "LEC",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "HAM",
+      "rival_driver": "NOR",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "HAM",
+      "rival_driver": "PIA",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "HAM",
+      "rival_driver": "HAD",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "PIA",
+      "rival_driver": "ANT",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "PIA",
+      "rival_driver": "VER",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "PIA",
+      "rival_driver": "RUS",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "PIA",
+      "rival_driver": "LEC",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "PIA",
+      "rival_driver": "NOR",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "PIA",
+      "rival_driver": "HAM",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "PIA",
+      "rival_driver": "HAD",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "HAD",
+      "rival_driver": "ANT",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "HAD",
+      "rival_driver": "VER",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "HAD",
+      "rival_driver": "RUS",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "HAD",
+      "rival_driver": "LEC",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "HAD",
+      "rival_driver": "NOR",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "HAD",
+      "rival_driver": "HAM",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    },
+    {
+      "undercut_driver": "HAD",
+      "rival_driver": "PIA",
+      "window_laps": 3,
+      "success_pct": 71.2,
+      "safety_car_window_pct": 3.3,
+      "pit_loss_s": 20.0,
+      "tire_deg_slope_s_per_lap": 0.05
+    }
+  ]
+}
