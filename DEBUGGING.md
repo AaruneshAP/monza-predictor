@@ -333,3 +333,31 @@ past this one bug: when a live upstream feed is known to be
 intermittently down, don't assume which *specific* calls against it will
 fail based on a different call's behavior — wrap the whole dependent
 chain, not just the piece that failed last time.
+
+### 15. OpenF1 itself: a query-string `+` and no rate-limit pacing
+
+With #14's fix shipped, the fallback finally triggered correctly for
+every driver across all 8 rounds — real confirmation that session
+matching, driver resolution, and fastest-lap selection all work exactly
+as designed (genuine OpenF1 session keys, correct driver numbers, correct
+lap picked). But every single `car_data` call still failed, 100% of the
+time, with a `500 Internal Server Error` — while the `sessions`, `drivers`,
+and `laps` calls on the same session all succeeded. The one thing that
+request does differently: it filters by date range (`date>=`, `date<`),
+built from a Python `datetime.isoformat()`, which renders the UTC offset
+as `+00:00`. A consistent 500 specific to the one endpoint using that
+format — not an intermittent data gap, not a 404 — is the signature of a
+query-string parser mishandling the `+` rather than a real absence of
+data. Switched to the `Z`-suffixed format OpenF1's own documentation
+examples use instead of guessing twice.
+
+Separately, hammering 8 rounds × up to 6 drivers with zero pacing between
+requests drew real `429`s partway through every run — unsurprising for a
+free public API with no API key. Added a minimum spacing between OpenF1
+requests and a single retry with backoff on a 429, in `_openf1_get()`
+rather than duplicated per call site.
+
+Neither fix has been confirmed against the live API yet as of writing
+this entry — both are reasoned from the exact, consistent failure pattern
+in the previous real dispatch, not verified success. The next real
+`telemetry` dispatch is what actually confirms or refutes them.

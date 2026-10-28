@@ -37,6 +37,7 @@ import json
 import os
 import re
 import sqlite3
+import time
 import traceback
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -55,6 +56,44 @@ TELEMETRY_DIR = Path(__file__).parent.parent / "frontend" / "public" / "telemetr
 
 OPENF1_BASE = "https://api.openf1.org/v1"
 OPENF1_TIMEOUT = 15  # seconds per request — a public free API, fail fast rather than hang the whole run
+OPENF1_MIN_INTERVAL = 0.3  # seconds between any two OpenF1 requests — a free public API, be a reasonable citizen
+OPENF1_RETRY_BACKOFF = 3.0  # seconds to wait before a single retry on 429 (confirmed live: hit this backfilling 8 rounds back to back with no pacing)
+_openf1_last_request_at = 0.0
+
+
+def _openf1_get(path: str, params: dict) -> requests.Response:
+    """GET against OpenF1 with basic rate-limit courtesy: a minimum
+    spacing between requests, and one retry (with a short backoff) if a
+    429 comes back anyway. Confirmed live: backfilling 8 rounds' worth of
+    drivers back to back with zero pacing drew 429s from several requests
+    partway through — this is cheap insurance against the same thing,
+    not a defense against a hard rate limit that needs real backoff math.
+    """
+    global _openf1_last_request_at
+    wait = OPENF1_MIN_INTERVAL - (time.monotonic() - _openf1_last_request_at)
+    if wait > 0:
+        time.sleep(wait)
+    resp = requests.get(f"{OPENF1_BASE}{path}", params=params, timeout=OPENF1_TIMEOUT)
+    _openf1_last_request_at = time.monotonic()
+    if resp.status_code == 429:
+        time.sleep(OPENF1_RETRY_BACKOFF)
+        resp = requests.get(f"{OPENF1_BASE}{path}", params=params, timeout=OPENF1_TIMEOUT)
+        _openf1_last_request_at = time.monotonic()
+    return resp
+
+
+def _iso_z(dt: datetime) -> str:
+    """Formats a UTC datetime as OpenF1's own documented examples do —
+    a 'Z' suffix, not a '+00:00' offset. Every OpenF1 call that didn't
+    involve a date filter (sessions, drivers, laps, stints) worked
+    correctly on the first real dispatch against the live API; every
+    car_data call — the one endpoint using date>=/date< params built
+    with +00:00 — failed with a consistent 500 from OpenF1's own server,
+    which is the signature of a query-string parser choking on the `+`
+    rather than a real data gap. Switched the date format rather than
+    guess further; if this isn't it, the next real dispatch will show
+    a different failure to chase."""
+    return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f") + "Z"
 
 
 def _load_queries() -> dict[str, str]:
@@ -80,11 +119,7 @@ def _openf1_find_session(race_date: str) -> int | None:
     it often doesn't. Returns None if OpenF1 has nothing in range (a
     session it doesn't carry, or OpenF1 itself unreachable)."""
     try:
-        resp = requests.get(
-            f"{OPENF1_BASE}/sessions",
-            params={"year": SEASON_YEAR, "session_name": "Qualifying"},
-            timeout=OPENF1_TIMEOUT,
-        )
+        resp = _openf1_get("/sessions", {"year": SEASON_YEAR, "session_name": "Qualifying"})
         resp.raise_for_status()
         sessions = resp.json()
     except Exception as exc:
@@ -121,11 +156,7 @@ def _openf1_fastest_lap_telemetry(session_key: int, driver_code: str) -> dict | 
     the same way, by integrating speed over time from the lap's start.
     """
     try:
-        resp = requests.get(
-            f"{OPENF1_BASE}/drivers",
-            params={"session_key": session_key, "name_acronym": driver_code},
-            timeout=OPENF1_TIMEOUT,
-        )
+        resp = _openf1_get("/drivers", {"session_key": session_key, "name_acronym": driver_code})
         resp.raise_for_status()
         drivers = resp.json()
     except Exception as exc:
@@ -137,11 +168,7 @@ def _openf1_fastest_lap_telemetry(session_key: int, driver_code: str) -> dict | 
     driver_number = drivers[0]["driver_number"]
 
     try:
-        resp = requests.get(
-            f"{OPENF1_BASE}/laps",
-            params={"session_key": session_key, "driver_number": driver_number},
-            timeout=OPENF1_TIMEOUT,
-        )
+        resp = _openf1_get("/laps", {"session_key": session_key, "driver_number": driver_number})
         resp.raise_for_status()
         laps = resp.json()
     except Exception as exc:
@@ -165,15 +192,14 @@ def _openf1_fastest_lap_telemetry(session_key: int, driver_code: str) -> dict | 
     lap_end = lap_start + timedelta(seconds=fastest["lap_duration"])
 
     try:
-        resp = requests.get(
-            f"{OPENF1_BASE}/car_data",
-            params={
+        resp = _openf1_get(
+            "/car_data",
+            {
                 "session_key": session_key,
                 "driver_number": driver_number,
-                "date>=": lap_start.isoformat(),
-                "date<": lap_end.isoformat(),
+                "date>=": _iso_z(lap_start),
+                "date<": _iso_z(lap_end),
             },
-            timeout=OPENF1_TIMEOUT,
         )
         resp.raise_for_status()
         samples = resp.json()
@@ -221,11 +247,7 @@ def _openf1_fastest_lap_telemetry(session_key: int, driver_code: str) -> dict | 
     # if this one part doesn't resolve.
     compound = None
     try:
-        resp = requests.get(
-            f"{OPENF1_BASE}/stints",
-            params={"session_key": session_key, "driver_number": driver_number},
-            timeout=OPENF1_TIMEOUT,
-        )
+        resp = _openf1_get("/stints", {"session_key": session_key, "driver_number": driver_number})
         resp.raise_for_status()
         lap_number = fastest.get("lap_number")
         for stint in resp.json():
