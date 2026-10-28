@@ -258,3 +258,41 @@ of this fix — see the "has not been loaded yet" issue affecting every
 round's season-form fetch) confirming it degrades to the neutral 0.5
 default already used elsewhere rather than crashing or silently zeroing
 someone out.
+
+### 13. FastF1's car-telemetry feed outage, worked around with a second data source
+
+The "has not been loaded yet" issue from #12 turned out to be bigger than
+season-form data — once `model/generate_telemetry.py` existed and was
+actually run against real FastF1 data for the first time, every one of 8
+rounds failed the same way: `quali.load(laps=True, telemetry=True, ...)`
+succeeds (lap results, sector times, compound all load fine) but the
+underlying `car_data`/`position_data` endpoints don't ("Car telemetry
+data is unavailable!", "Car position data is unavailable!" in FastF1's
+own logs), so `lap.get_telemetry()` raises for every driver. This isn't
+new-code-on-first-run flakiness — it's the same live-timing-feed gap
+that's been intermittently breaking season-form quali/race data for
+weeks, just hitting a different FastF1 data category this time.
+
+Nothing in this project's control fixes an upstream outage, but the
+*category* of data (raw car telemetry) turns out to have a second,
+independent source: OpenF1 (api.openf1.org), a separately hosted F1 data
+API with its own pipeline. When FastF1's `get_telemetry()` fails for a
+driver's lap, `generate_telemetry.py` now falls back to OpenF1 instead of
+just giving up on that driver — matching the session by date proximity to
+the round's known race date (OpenF1's circuit/location naming doesn't
+reliably line up with FastF1's event names, so date is the robust match),
+resolving the driver's car number from its driver list, picking their
+fastest non-pit timed lap, and pulling that lap's car_data. One real gap:
+OpenF1 doesn't expose a distance-along-lap channel the way FastF1's
+`add_distance()` does, so distance is reconstructed by integrating speed
+over time (trapezoidal rule) from the lap's start — the same approach
+FastF1 uses internally, just done by hand here.
+
+Verified against OpenF1's documented response schema with a mocked
+`requests.get` (session date-matching, pit-out-lap exclusion, fastest-lap
+selection, tyre compound via the stints endpoint, and the distance
+reconstruction's output range) before ever trying it against the real
+API — this sandbox's own network policy blocks api.openf1.org outright
+(a 403 at the egress proxy), so the only way to confirm it actually works
+is the next real GitHub Actions `telemetry` dispatch, which does have
+unrestricted internet access.

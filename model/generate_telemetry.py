@@ -19,6 +19,13 @@ makes a speed-vs-distance comparison between drivers apples-to-apples —
 comparing arbitrary race laps would mix in fuel load, tire age, and
 traffic differences that have nothing to do with driving or car pace.
 
+FastF1's own car-telemetry feed has a real, recurring outage (see
+DEBUGGING.md) where lap results load fine but the underlying car_data/
+position_data don't. When that happens for a given driver's lap, this
+falls back to OpenF1 (api.openf1.org) — an independently hosted F1 data
+API with its own pipeline, not FastF1's, so the two don't share a single
+point of failure — see _openf1_fastest_lap_telemetry().
+
 Usage:
     python generate_telemetry.py                # every completed round without telemetry yet
     python generate_telemetry.py --round 14      # just round 14
@@ -30,11 +37,12 @@ import json
 import os
 import re
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import fastf1
 import pandas as pd
+import requests
 
 import archive
 from generate_predictions import _season_rounds
@@ -43,6 +51,9 @@ from race_model import SEASON_YEAR
 TOP_N_DRIVERS = 6  # how many of the race's classified finishers get telemetry pulled
 QUERIES_PATH = Path(__file__).parent.parent / "telemetry" / "queries.sql"
 TELEMETRY_DIR = Path(__file__).parent.parent / "frontend" / "public" / "telemetry"
+
+OPENF1_BASE = "https://api.openf1.org/v1"
+OPENF1_TIMEOUT = 15  # seconds per request — a public free API, fail fast rather than hang the whole run
 
 
 def _load_queries() -> dict[str, str]:
@@ -58,6 +69,180 @@ def _load_queries() -> dict[str, str]:
     if not queries:
         raise RuntimeError(f"No '-- name: x' queries found in {QUERIES_PATH}")
     return queries
+
+
+def _openf1_find_session(race_date: str) -> int | None:
+    """Finds this round's Qualifying session_key on OpenF1 by matching
+    session date to the round's known race date — qualifying always runs
+    within a couple days of the race, and this avoids needing OpenF1's
+    circuit/location naming to line up with FastF1's event names, which
+    it often doesn't. Returns None if OpenF1 has nothing in range (a
+    session it doesn't carry, or OpenF1 itself unreachable)."""
+    try:
+        resp = requests.get(
+            f"{OPENF1_BASE}/sessions",
+            params={"year": SEASON_YEAR, "session_name": "Qualifying"},
+            timeout=OPENF1_TIMEOUT,
+        )
+        resp.raise_for_status()
+        sessions = resp.json()
+    except Exception as exc:
+        print(f"  [openf1] couldn't list qualifying sessions: {exc}")
+        return None
+
+    race_dt = datetime.strptime(race_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    best, best_delta = None, None
+    for s in sessions:
+        try:
+            start = datetime.fromisoformat(s["date_start"].replace("Z", "+00:00"))
+        except Exception:
+            continue
+        delta = abs((race_dt - start).total_seconds())
+        if delta > 3 * 86400:  # quali is always within a few days of its race
+            continue
+        if best_delta is None or delta < best_delta:
+            best, best_delta = s, delta
+    return best["session_key"] if best else None
+
+
+def _openf1_fastest_lap_telemetry(session_key: int, driver_code: str) -> dict | None:
+    """Fallback telemetry source for one driver's fastest qualifying lap,
+    used when FastF1's own car-telemetry feed has nothing (a real,
+    recurring outage — see DEBUGGING.md). OpenF1 (api.openf1.org) is an
+    independently hosted F1 data API serving the same category of car
+    telemetry from its own pipeline, not FastF1's, so the two don't share
+    a single point of failure. Returns the same shape the FastF1 path in
+    generate() produces (lap fields + a list of raw samples), or None if
+    OpenF1 doesn't have this driver's data either.
+
+    OpenF1's car_data has no distance-along-lap channel of its own
+    (FastF1 computes its via Session.add_distance()) — reconstructed here
+    the same way, by integrating speed over time from the lap's start.
+    """
+    try:
+        resp = requests.get(
+            f"{OPENF1_BASE}/drivers",
+            params={"session_key": session_key, "name_acronym": driver_code},
+            timeout=OPENF1_TIMEOUT,
+        )
+        resp.raise_for_status()
+        drivers = resp.json()
+    except Exception as exc:
+        print(f"    [openf1] {driver_code}: couldn't resolve driver number ({exc})")
+        return None
+    if not drivers:
+        print(f"    [openf1] {driver_code}: not in this session's entry list")
+        return None
+    driver_number = drivers[0]["driver_number"]
+
+    try:
+        resp = requests.get(
+            f"{OPENF1_BASE}/laps",
+            params={"session_key": session_key, "driver_number": driver_number},
+            timeout=OPENF1_TIMEOUT,
+        )
+        resp.raise_for_status()
+        laps = resp.json()
+    except Exception as exc:
+        print(f"    [openf1] {driver_code}: couldn't load laps ({exc})")
+        return None
+
+    # A valid timed lap: has a duration, and wasn't a pit in/out lap
+    # (not representative pace — using one would produce a false
+    # "fastest lap").
+    valid = [lap for lap in laps if lap.get("lap_duration") and not lap.get("is_pit_out_lap") and lap.get("date_start")]
+    if not valid:
+        print(f"    [openf1] {driver_code}: no valid timed laps")
+        return None
+    fastest = min(valid, key=lambda lap: lap["lap_duration"])
+
+    try:
+        lap_start = datetime.fromisoformat(fastest["date_start"].replace("Z", "+00:00"))
+    except Exception as exc:
+        print(f"    [openf1] {driver_code}: couldn't parse lap start time ({exc})")
+        return None
+    lap_end = lap_start + timedelta(seconds=fastest["lap_duration"])
+
+    try:
+        resp = requests.get(
+            f"{OPENF1_BASE}/car_data",
+            params={
+                "session_key": session_key,
+                "driver_number": driver_number,
+                "date>=": lap_start.isoformat(),
+                "date<": lap_end.isoformat(),
+            },
+            timeout=OPENF1_TIMEOUT,
+        )
+        resp.raise_for_status()
+        samples = resp.json()
+    except Exception as exc:
+        print(f"    [openf1] {driver_code}: couldn't load car telemetry ({exc})")
+        return None
+    if not samples:
+        print(f"    [openf1] {driver_code}: no car telemetry samples for this lap")
+        return None
+
+    rows = []
+    for s in samples:
+        try:
+            t = datetime.fromisoformat(s["date"].replace("Z", "+00:00"))
+        except Exception:
+            continue
+        rows.append(
+            {
+                "time_s": (t - lap_start).total_seconds(),
+                "speed_kph": s.get("speed"),
+                "throttle_pct": s.get("throttle"),
+                "brake": 1 if (s.get("brake") or 0) > 0 else 0,
+                "drs": s.get("drs") or 0,
+            }
+        )
+    rows.sort(key=lambda r: r["time_s"])
+    if len(rows) < 2:
+        print(f"    [openf1] {driver_code}: not enough telemetry samples to build a trace")
+        return None
+
+    # Reconstruct cumulative distance by integrating speed over time
+    # (trapezoidal rule, speed km/h -> m/s) — the same approach FastF1's
+    # own add_distance() uses, since OpenF1's car_data carries no
+    # distance channel of its own.
+    distance = 0.0
+    rows[0]["distance_m"] = 0.0
+    for prev, cur in zip(rows, rows[1:]):
+        dt = cur["time_s"] - prev["time_s"]
+        v_avg_ms = ((prev["speed_kph"] or 0) + (cur["speed_kph"] or 0)) / 2 / 3.6
+        distance += max(v_avg_ms * dt, 0.0)
+        cur["distance_m"] = distance
+
+    # Tyre compound isn't on the laps endpoint — a lightweight extra call
+    # to stints, matched by lap number. Not worth failing the driver over
+    # if this one part doesn't resolve.
+    compound = None
+    try:
+        resp = requests.get(
+            f"{OPENF1_BASE}/stints",
+            params={"session_key": session_key, "driver_number": driver_number},
+            timeout=OPENF1_TIMEOUT,
+        )
+        resp.raise_for_status()
+        lap_number = fastest.get("lap_number")
+        for stint in resp.json():
+            if stint.get("lap_start") is not None and stint.get("lap_end") is not None:
+                if stint["lap_start"] <= lap_number <= stint["lap_end"]:
+                    compound = stint.get("compound")
+                    break
+    except Exception:
+        pass
+
+    return {
+        "lap_time_s": fastest["lap_duration"],
+        "sector1_s": fastest.get("duration_sector_1"),
+        "sector2_s": fastest.get("duration_sector_2"),
+        "sector3_s": fastest.get("duration_sector_3"),
+        "compound": compound,
+        "samples": rows,
+    }
 
 
 def _next_round_without_telemetry(rounds: list[dict]) -> list[dict]:
@@ -100,6 +285,13 @@ def generate(round_number: int, force: bool = False) -> str:
     quali = fastf1.get_session(SEASON_YEAR, round_number, "Q")
     quali.load(laps=True, telemetry=True, weather=False, messages=False)
 
+    # Resolved lazily, at most once per round — only if FastF1's own
+    # telemetry turns out to have nothing and a fallback is actually
+    # needed. False (not None) once a lookup has been tried and found
+    # nothing, so a round-wide outage doesn't re-query OpenF1's sessions
+    # endpoint once per driver.
+    openf1_session_key: int | None | bool = None
+
     lap_rows = []
     sample_rows = []
     for driver in drivers:
@@ -111,38 +303,70 @@ def generate(round_number: int, force: bool = False) -> str:
         if fastest is None or pd.isna(fastest.get("LapTime")):
             print(f"  [telemetry] {driver}: no valid fastest lap, skipping")
             continue
+
+        tel = None
         try:
             tel = fastest.get_telemetry().add_distance()
+            if tel.empty:
+                tel = None
         except Exception as exc:
-            print(f"  [telemetry] {driver}: couldn't load lap telemetry ({exc}), skipping")
+            print(f"  [telemetry] {driver}: FastF1 has no car telemetry for this lap ({exc}) — trying OpenF1...")
+
+        if tel is not None:
+            lap_rows.append(
+                {
+                    "driver": driver,
+                    "team": team_by_driver.get(driver, ""),
+                    "lap_time_s": fastest["LapTime"].total_seconds(),
+                    "sector1_s": fastest["Sector1Time"].total_seconds() if pd.notna(fastest.get("Sector1Time")) else None,
+                    "sector2_s": fastest["Sector2Time"].total_seconds() if pd.notna(fastest.get("Sector2Time")) else None,
+                    "sector3_s": fastest["Sector3Time"].total_seconds() if pd.notna(fastest.get("Sector3Time")) else None,
+                    "compound": fastest.get("Compound"),
+                }
+            )
+            for _, row in tel.iterrows():
+                sample_rows.append(
+                    {
+                        "driver": driver,
+                        "distance_m": float(row["Distance"]),
+                        "speed_kph": float(row["Speed"]),
+                        "throttle_pct": float(row["Throttle"]),
+                        "brake": 1 if row["Brake"] else 0,
+                        "drs": int(row["DRS"]) if pd.notna(row["DRS"]) else 0,
+                        "time_s": row["Time"].total_seconds(),
+                    }
+                )
             continue
-        if tel.empty:
-            print(f"  [telemetry] {driver}: empty telemetry for fastest lap, skipping")
+
+        # FastF1 has no car telemetry for this lap — fall back to OpenF1,
+        # an independently hosted data source with its own pipeline, not
+        # FastF1's, so the two don't share a single point of failure
+        # (see DEBUGGING.md for the FastF1-side outage this works around).
+        if openf1_session_key is None:
+            openf1_session_key = _openf1_find_session(race["race_date"]) or False
+        if not openf1_session_key:
+            print(f"  [telemetry] {driver}: OpenF1 has no matching qualifying session either, skipping")
+            continue
+
+        fallback = _openf1_fastest_lap_telemetry(openf1_session_key, driver)
+        if fallback is None:
+            print(f"  [telemetry] {driver}: OpenF1 fallback also has nothing, skipping")
             continue
 
         lap_rows.append(
             {
                 "driver": driver,
                 "team": team_by_driver.get(driver, ""),
-                "lap_time_s": fastest["LapTime"].total_seconds(),
-                "sector1_s": fastest["Sector1Time"].total_seconds() if pd.notna(fastest.get("Sector1Time")) else None,
-                "sector2_s": fastest["Sector2Time"].total_seconds() if pd.notna(fastest.get("Sector2Time")) else None,
-                "sector3_s": fastest["Sector3Time"].total_seconds() if pd.notna(fastest.get("Sector3Time")) else None,
-                "compound": fastest.get("Compound"),
+                "lap_time_s": fallback["lap_time_s"],
+                "sector1_s": fallback["sector1_s"],
+                "sector2_s": fallback["sector2_s"],
+                "sector3_s": fallback["sector3_s"],
+                "compound": fallback["compound"],
             }
         )
-        for _, row in tel.iterrows():
-            sample_rows.append(
-                {
-                    "driver": driver,
-                    "distance_m": float(row["Distance"]),
-                    "speed_kph": float(row["Speed"]),
-                    "throttle_pct": float(row["Throttle"]),
-                    "brake": 1 if row["Brake"] else 0,
-                    "drs": int(row["DRS"]) if pd.notna(row["DRS"]) else 0,
-                    "time_s": row["Time"].total_seconds(),
-                }
-            )
+        for s in fallback["samples"]:
+            sample_rows.append({"driver": driver, **s})
+        print(f"  [telemetry] {driver}: used OpenF1 fallback ({len(fallback['samples'])} samples)")
 
     if not lap_rows:
         raise RuntimeError(f"No usable qualifying telemetry found for any of {drivers} — nothing to write.")
