@@ -4,7 +4,7 @@
   "race_name": "Mexico City Grand Prix",
   "slug": "2026-r19-mexico-city-grand-prix",
   "race_date": "2026-11-01",
-  "generated_at": "2026-10-31T00:22:48.035665+00:00",
+  "generated_at": "2026-10-31T09:18:34.513376+00:00",
   "backtest": false,
   "status": "predicted",
   "n_simulations": 100000,
@@ -23,13 +23,13 @@
       "team": "Mercedes",
       "grid_position": 1,
       "quali_time": null,
-      "win_pct": 29.5,
+      "win_pct": 30.4,
       "win_pct_stdev": 0.7,
-      "podium_pct": 61.5,
-      "points_pct": 96.6,
-      "expected_position": 3.57,
+      "podium_pct": 62.6,
+      "points_pct": 96.8,
+      "expected_position": 3.49,
       "contributions": {
-        "base_score": 1.0194,
+        "base_score": 1.026,
         "terms": [
           {
             "key": "quali_pace",
@@ -59,7 +59,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0109
+            "value": 0.0175
           },
           {
             "key": "pit_stops",
@@ -75,13 +75,13 @@
       "team": "Red Bull",
       "grid_position": 3,
       "quali_time": null,
-      "win_pct": 17.0,
+      "win_pct": 16.7,
       "win_pct_stdev": 0.5,
-      "podium_pct": 45.7,
+      "podium_pct": 45.5,
       "points_pct": 92.6,
-      "expected_position": 4.73,
+      "expected_position": 4.74,
       "contributions": {
-        "base_score": 0.9419,
+        "base_score": 0.9417,
         "terms": [
           {
             "key": "quali_pace",
@@ -111,7 +111,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0222
+            "value": 0.022
           },
           {
             "key": "pit_stops",
@@ -127,13 +127,13 @@
       "team": "Mercedes",
       "grid_position": 8,
       "quali_time": null,
-      "win_pct": 11.6,
+      "win_pct": 11.4,
       "win_pct_stdev": 0.5,
       "podium_pct": 35.6,
-      "points_pct": 88.6,
+      "points_pct": 88.7,
       "expected_position": 5.59,
       "contributions": {
-        "base_score": 0.8917,
+        "base_score": 0.8919,
         "terms": [
           {
             "key": "quali_pace",
@@ -163,7 +163,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0153
+            "value": 0.0155
           },
           {
             "key": "pit_stops",
@@ -179,13 +179,13 @@
       "team": "Ferrari",
       "grid_position": 2,
       "quali_time": null,
-      "win_pct": 11.1,
+      "win_pct": 11.0,
       "win_pct_stdev": 0.5,
       "podium_pct": 34.6,
-      "points_pct": 88.3,
+      "points_pct": 88.4,
       "expected_position": 5.66,
       "contributions": {
-        "base_score": 0.8889,
+        "base_score": 0.8895,
         "terms": [
           {
             "key": "quali_pace",
@@ -215,7 +215,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0197
+            "value": 0.0203
           },
           {
             "key": "pit_stops",
@@ -233,11 +233,11 @@
       "quali_time": null,
       "win_pct": 10.4,
       "win_pct_stdev": 0.5,
-      "podium_pct": 33.5,
-      "points_pct": 87.7,
-      "expected_position": 5.78,
+      "podium_pct": 33.6,
+      "points_pct": 87.9,
+      "expected_position": 5.76,
       "contributions": {
-        "base_score": 0.8819,
+        "base_score": 0.8833,
         "terms": [
           {
             "key": "quali_pace",
@@ -267,7 +267,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0169
+            "value": 0.0182
           },
           {
             "key": "pit_stops",
@@ -283,13 +283,13 @@
       "team": "Ferrari",
       "grid_position": 4,
       "quali_time": null,
-      "win_pct": 9.1,
-      "win_pct_stdev": 0.4,
-      "podium_pct": 31.0,
-      "points_pct": 86.3,
-      "expected_position": 6.03,
+      "win_pct": 8.9,
+      "win_pct_stdev": 0.5,
+      "podium_pct": 30.6,
+      "points_pct": 86.2,
+      "expected_position": 6.06,
       "contributions": {
-        "base_score": 0.8675,
+        "base_score": 0.8661,
         "terms": [
           {
             "key": "quali_pace",
@@ -319,7 +319,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0219
+            "value": 0.0205
           },
           {
             "key": "pit_stops",
@@ -337,11 +337,11 @@
       "quali_time": null,
       "win_pct": 4.0,
       "win_pct_stdev": 0.2,
-      "podium_pct": 17.2,
-      "points_pct": 74.0,
-      "expected_position": 7.84,
+      "podium_pct": 17.3,
+      "points_pct": 74.3,
+      "expected_position": 7.82,
       "contributions": {
-        "base_score": 0.7786,
+        "base_score": 0.7799,
         "terms": [
           {
             "key": "quali_pace",
@@ -371,7 +371,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.015
+            "value": 0.0163
           },
           {
             "key": "pit_stops",
@@ -387,13 +387,13 @@
       "team": "Red Bull",
       "grid_position": 6,
       "quali_time": null,
-      "win_pct": 2.7,
+      "win_pct": 2.6,
       "win_pct_stdev": 0.2,
-      "podium_pct": 12.6,
-      "points_pct": 67.2,
-      "expected_position": 8.69,
+      "podium_pct": 12.3,
+      "points_pct": 66.8,
+      "expected_position": 8.74,
       "contributions": {
-        "base_score": 0.74,
+        "base_score": 0.7378,
         "terms": [
           {
             "key": "quali_pace",
@@ -423,7 +423,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0109
+            "value": 0.0087
           },
           {
             "key": "pit_stops",
@@ -439,13 +439,13 @@
       "team": "RB F1 Team",
       "grid_position": 9,
       "quali_time": null,
-      "win_pct": 1.8,
+      "win_pct": 1.7,
       "win_pct_stdev": 0.2,
-      "podium_pct": 8.8,
-      "points_pct": 58.9,
-      "expected_position": 9.65,
+      "podium_pct": 8.6,
+      "points_pct": 58.4,
+      "expected_position": 9.71,
       "contributions": {
-        "base_score": 0.6965,
+        "base_score": 0.694,
         "terms": [
           {
             "key": "quali_pace",
@@ -475,7 +475,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.005
+            "value": 0.0025
           },
           {
             "key": "pit_stops",
@@ -494,10 +494,10 @@
       "win_pct": 1.0,
       "win_pct_stdev": 0.1,
       "podium_pct": 5.8,
-      "points_pct": 49.9,
-      "expected_position": 10.68,
+      "points_pct": 50.0,
+      "expected_position": 10.67,
       "contributions": {
-        "base_score": 0.6518,
+        "base_score": 0.652,
         "terms": [
           {
             "key": "quali_pace",
@@ -527,7 +527,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0109
+            "value": 0.0111
           },
           {
             "key": "pit_stops",
@@ -543,13 +543,13 @@
       "team": "Alpine F1 Team",
       "grid_position": 10,
       "quali_time": null,
-      "win_pct": 0.7,
+      "win_pct": 0.6,
       "win_pct_stdev": 0.1,
-      "podium_pct": 4.0,
-      "points_pct": 42.5,
-      "expected_position": 11.51,
+      "podium_pct": 3.9,
+      "points_pct": 42.3,
+      "expected_position": 11.54,
       "contributions": {
-        "base_score": 0.6162,
+        "base_score": 0.6147,
         "terms": [
           {
             "key": "quali_pace",
@@ -579,7 +579,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0138
+            "value": 0.0123
           },
           {
             "key": "pit_stops",
@@ -597,11 +597,11 @@
       "quali_time": null,
       "win_pct": 0.5,
       "win_pct_stdev": 0.1,
-      "podium_pct": 3.3,
-      "points_pct": 37.4,
-      "expected_position": 12.1,
+      "podium_pct": 3.1,
+      "points_pct": 36.8,
+      "expected_position": 12.17,
       "contributions": {
-        "base_score": 0.5886,
+        "base_score": 0.5852,
         "terms": [
           {
             "key": "quali_pace",
@@ -631,7 +631,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0112
+            "value": 0.0079
           },
           {
             "key": "pit_stops",
@@ -649,11 +649,11 @@
       "quali_time": null,
       "win_pct": 0.4,
       "win_pct_stdev": 0.1,
-      "podium_pct": 2.9,
-      "points_pct": 35.9,
-      "expected_position": 12.27,
+      "podium_pct": 2.8,
+      "points_pct": 35.5,
+      "expected_position": 12.33,
       "contributions": {
-        "base_score": 0.5821,
+        "base_score": 0.5796,
         "terms": [
           {
             "key": "quali_pace",
@@ -683,7 +683,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.01
+            "value": 0.0075
           },
           {
             "key": "pit_stops",
@@ -695,69 +695,17 @@
     },
     {
       "position": 14,
-      "driver": "OCO",
-      "team": "Haas F1 Team",
-      "grid_position": 14,
-      "quali_time": null,
-      "win_pct": 0.1,
-      "win_pct_stdev": 0.0,
-      "podium_pct": 0.7,
-      "points_pct": 16.6,
-      "expected_position": 15.01,
-      "contributions": {
-        "base_score": 0.4602,
-        "terms": [
-          {
-            "key": "quali_pace",
-            "label": "Quali pace",
-            "value": 0.125
-          },
-          {
-            "key": "season_form",
-            "label": "Season form (championship points)",
-            "value": 0.2553
-          },
-          {
-            "key": "grid_position",
-            "label": "Grid position",
-            "value": 0.0027
-          },
-          {
-            "key": "top_speed",
-            "label": "Top speed",
-            "value": 0.06
-          },
-          {
-            "key": "tire_management",
-            "label": "Tire management",
-            "value": 0.031
-          },
-          {
-            "key": "historical_form",
-            "label": "Historical form at this circuit",
-            "value": 0.0112
-          },
-          {
-            "key": "pit_stops",
-            "label": "Pit stops",
-            "value": -0.025
-          }
-        ]
-      }
-    },
-    {
-      "position": 15,
       "driver": "BEA",
       "team": "Haas F1 Team",
       "grid_position": 22,
       "quali_time": null,
-      "win_pct": 0.1,
+      "win_pct": 0.2,
       "win_pct_stdev": 0.1,
-      "podium_pct": 1.1,
-      "points_pct": 21.4,
-      "expected_position": 14.26,
+      "podium_pct": 1.2,
+      "points_pct": 22.7,
+      "expected_position": 14.06,
       "contributions": {
-        "base_score": 0.4943,
+        "base_score": 0.5034,
         "terms": [
           {
             "key": "quali_pace",
@@ -787,7 +735,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0109
+            "value": 0.02
           },
           {
             "key": "pit_stops",
@@ -798,7 +746,7 @@
       }
     },
     {
-      "position": 16,
+      "position": 15,
       "driver": "ALO",
       "team": "Aston Martin",
       "grid_position": 16,
@@ -807,9 +755,9 @@
       "win_pct_stdev": 0.0,
       "podium_pct": 0.8,
       "points_pct": 18.4,
-      "expected_position": 14.7,
+      "expected_position": 14.72,
       "contributions": {
-        "base_score": 0.4749,
+        "base_score": 0.4744,
         "terms": [
           {
             "key": "quali_pace",
@@ -839,7 +787,59 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.005
+            "value": 0.0045
+          },
+          {
+            "key": "pit_stops",
+            "label": "Pit stops",
+            "value": -0.025
+          }
+        ]
+      }
+    },
+    {
+      "position": 16,
+      "driver": "OCO",
+      "team": "Haas F1 Team",
+      "grid_position": 14,
+      "quali_time": null,
+      "win_pct": 0.1,
+      "win_pct_stdev": 0.0,
+      "podium_pct": 0.7,
+      "points_pct": 16.7,
+      "expected_position": 14.99,
+      "contributions": {
+        "base_score": 0.4607,
+        "terms": [
+          {
+            "key": "quali_pace",
+            "label": "Quali pace",
+            "value": 0.125
+          },
+          {
+            "key": "season_form",
+            "label": "Season form (championship points)",
+            "value": 0.2553
+          },
+          {
+            "key": "grid_position",
+            "label": "Grid position",
+            "value": 0.0027
+          },
+          {
+            "key": "top_speed",
+            "label": "Top speed",
+            "value": 0.06
+          },
+          {
+            "key": "tire_management",
+            "label": "Tire management",
+            "value": 0.031
+          },
+          {
+            "key": "historical_form",
+            "label": "Historical form at this circuit",
+            "value": 0.0118
           },
           {
             "key": "pit_stops",
@@ -858,10 +858,10 @@
       "win_pct": 0.0,
       "win_pct_stdev": 0.0,
       "podium_pct": 0.2,
-      "points_pct": 8.8,
-      "expected_position": 16.65,
+      "points_pct": 8.9,
+      "expected_position": 16.62,
       "contributions": {
-        "base_score": 0.3821,
+        "base_score": 0.3837,
         "terms": [
           {
             "key": "quali_pace",
@@ -891,7 +891,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0109
+            "value": 0.0125
           },
           {
             "key": "pit_stops",
@@ -943,7 +943,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0072
+            "value": 0.0073
           },
           {
             "key": "pit_stops",
@@ -962,10 +962,10 @@
       "win_pct": 0.0,
       "win_pct_stdev": 0.0,
       "podium_pct": 0.4,
-      "points_pct": 12.7,
-      "expected_position": 15.75,
+      "points_pct": 12.4,
+      "expected_position": 15.81,
       "contributions": {
-        "base_score": 0.4258,
+        "base_score": 0.4226,
         "terms": [
           {
             "key": "quali_pace",
@@ -995,7 +995,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.02
+            "value": 0.0168
           },
           {
             "key": "pit_stops",
@@ -1017,7 +1017,7 @@
       "points_pct": 5.0,
       "expected_position": 17.77,
       "contributions": {
-        "base_score": 0.3221,
+        "base_score": 0.3225,
         "terms": [
           {
             "key": "quali_pace",
@@ -1047,7 +1047,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0083
+            "value": 0.0087
           },
           {
             "key": "pit_stops",
@@ -1118,7 +1118,7 @@
       "win_pct": 0.0,
       "win_pct_stdev": 0.0,
       "podium_pct": 0.1,
-      "points_pct": 3.8,
+      "points_pct": 3.9,
       "expected_position": 18.21,
       "contributions": {
         "base_score": 0.2967,
