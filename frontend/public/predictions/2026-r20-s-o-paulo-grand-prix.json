@@ -4,7 +4,7 @@
   "race_name": "S\u00e3o Paulo Grand Prix",
   "slug": "2026-r20-s-o-paulo-grand-prix",
   "race_date": "2026-11-08",
-  "generated_at": "2026-11-02T10:33:37.170417+00:00",
+  "generated_at": "2026-11-02T21:25:40.092443+00:00",
   "backtest": false,
   "status": "predicted",
   "n_simulations": 100000,
@@ -77,9 +77,9 @@
       "quali_time": null,
       "win_pct": 23.9,
       "win_pct_stdev": 0.6,
-      "podium_pct": 55.2,
+      "podium_pct": 55.4,
       "points_pct": 95.1,
-      "expected_position": 4.03,
+      "expected_position": 4.02,
       "contributions": {
         "base_score": 1.0217,
         "terms": [
@@ -128,9 +128,9 @@
       "grid_position": 4,
       "quali_time": null,
       "win_pct": 11.2,
-      "win_pct_stdev": 0.4,
-      "podium_pct": 35.2,
-      "points_pct": 88.4,
+      "win_pct_stdev": 0.5,
+      "podium_pct": 35.4,
+      "points_pct": 88.3,
       "expected_position": 5.63,
       "contributions": {
         "base_score": 0.9221,
@@ -234,7 +234,7 @@
       "win_pct": 8.9,
       "win_pct_stdev": 0.3,
       "podium_pct": 30.2,
-      "points_pct": 85.2,
+      "points_pct": 84.9,
       "expected_position": 6.17,
       "contributions": {
         "base_score": 0.8948,
@@ -284,8 +284,8 @@
       "grid_position": 5,
       "quali_time": null,
       "win_pct": 8.6,
-      "win_pct_stdev": 0.5,
-      "podium_pct": 29.3,
+      "win_pct_stdev": 0.4,
+      "podium_pct": 29.4,
       "points_pct": 84.6,
       "expected_position": 6.26,
       "contributions": {
@@ -333,15 +333,15 @@
       "position": 7,
       "driver": "PIA",
       "team": "McLaren",
-      "grid_position": 7,
+      "grid_position": 13,
       "quali_time": null,
       "win_pct": 4.0,
       "win_pct_stdev": 0.2,
-      "podium_pct": 17.3,
-      "points_pct": 73.4,
-      "expected_position": 7.9,
+      "podium_pct": 16.8,
+      "points_pct": 72.9,
+      "expected_position": 7.95,
       "contributions": {
-        "base_score": 0.8069,
+        "base_score": 0.8047,
         "terms": [
           {
             "key": "quali_pace",
@@ -356,7 +356,7 @@
           {
             "key": "grid_position",
             "label": "Grid position",
-            "value": 0.0049
+            "value": 0.0026
           },
           {
             "key": "top_speed",
@@ -385,15 +385,15 @@
       "position": 8,
       "driver": "HAD",
       "team": "Red Bull",
-      "grid_position": 12,
+      "grid_position": 9,
       "quali_time": null,
-      "win_pct": 2.8,
-      "win_pct_stdev": 0.3,
-      "podium_pct": 13.0,
-      "points_pct": 67.1,
-      "expected_position": 8.68,
+      "win_pct": 2.9,
+      "win_pct_stdev": 0.2,
+      "podium_pct": 13.2,
+      "points_pct": 67.0,
+      "expected_position": 8.67,
       "contributions": {
-        "base_score": 0.7707,
+        "base_score": 0.7716,
         "terms": [
           {
             "key": "quali_pace",
@@ -408,7 +408,7 @@
           {
             "key": "grid_position",
             "label": "Grid position",
-            "value": 0.0029
+            "value": 0.0038
           },
           {
             "key": "top_speed",
@@ -437,15 +437,15 @@
       "position": 9,
       "driver": "LAW",
       "team": "RB F1 Team",
-      "grid_position": 9,
+      "grid_position": 7,
       "quali_time": null,
       "win_pct": 2.0,
-      "win_pct_stdev": 0.2,
-      "podium_pct": 9.8,
-      "points_pct": 60.6,
-      "expected_position": 9.44,
+      "win_pct_stdev": 0.1,
+      "podium_pct": 10.1,
+      "points_pct": 60.9,
+      "expected_position": 9.41,
       "contributions": {
-        "base_score": 0.7362,
+        "base_score": 0.7373,
         "terms": [
           {
             "key": "quali_pace",
@@ -460,7 +460,7 @@
           {
             "key": "grid_position",
             "label": "Grid position",
-            "value": 0.0038
+            "value": 0.0049
           },
           {
             "key": "top_speed",
@@ -494,8 +494,8 @@
       "win_pct": 1.1,
       "win_pct_stdev": 0.2,
       "podium_pct": 6.2,
-      "points_pct": 49.8,
-      "expected_position": 10.67,
+      "points_pct": 49.7,
+      "expected_position": 10.69,
       "contributions": {
         "base_score": 0.6805,
         "terms": [
@@ -541,15 +541,15 @@
       "position": 11,
       "driver": "GAS",
       "team": "Alpine F1 Team",
-      "grid_position": 10,
+      "grid_position": 17,
       "quali_time": null,
       "win_pct": 0.7,
       "win_pct_stdev": 0.1,
       "podium_pct": 4.3,
-      "points_pct": 43.0,
-      "expected_position": 11.47,
+      "points_pct": 42.5,
+      "expected_position": 11.51,
       "contributions": {
-        "base_score": 0.6469,
+        "base_score": 0.6455,
         "terms": [
           {
             "key": "quali_pace",
@@ -564,7 +564,7 @@
           {
             "key": "grid_position",
             "label": "Grid position",
-            "value": 0.0034
+            "value": 0.002
           },
           {
             "key": "top_speed",
@@ -593,15 +593,15 @@
       "position": 12,
       "driver": "COL",
       "team": "Alpine F1 Team",
-      "grid_position": 8,
+      "grid_position": 15,
       "quali_time": null,
-      "win_pct": 0.7,
+      "win_pct": 0.5,
       "win_pct_stdev": 0.1,
-      "podium_pct": 4.3,
-      "points_pct": 42.2,
-      "expected_position": 11.56,
+      "podium_pct": 3.0,
+      "points_pct": 35.5,
+      "expected_position": 12.34,
       "contributions": {
-        "base_score": 0.6416,
+        "base_score": 0.6077,
         "terms": [
           {
             "key": "quali_pace",
@@ -611,12 +611,12 @@
           {
             "key": "season_form",
             "label": "Season form (championship points)",
-            "value": 0.4113
+            "value": 0.3794
           },
           {
             "key": "grid_position",
             "label": "Grid position",
-            "value": 0.0043
+            "value": 0.0023
           },
           {
             "key": "top_speed",
@@ -645,15 +645,15 @@
       "position": 13,
       "driver": "HUL",
       "team": "Audi",
-      "grid_position": 16,
+      "grid_position": 14,
       "quali_time": null,
-      "win_pct": 0.3,
+      "win_pct": 0.4,
       "win_pct_stdev": 0.1,
-      "podium_pct": 2.2,
-      "points_pct": 30.9,
-      "expected_position": 12.93,
+      "podium_pct": 2.8,
+      "points_pct": 34.2,
+      "expected_position": 12.52,
       "contributions": {
-        "base_score": 0.5821,
+        "base_score": 0.6001,
         "terms": [
           {
             "key": "quali_pace",
@@ -663,12 +663,12 @@
           {
             "key": "season_form",
             "label": "Season form (championship points)",
-            "value": 0.351
+            "value": 0.3687
           },
           {
             "key": "grid_position",
             "label": "Grid position",
-            "value": 0.0021
+            "value": 0.0025
           },
           {
             "key": "top_speed",
@@ -695,17 +695,17 @@
     },
     {
       "position": 14,
-      "driver": "BEA",
-      "team": "Haas F1 Team",
-      "grid_position": 19,
+      "driver": "BOR",
+      "team": "Audi",
+      "grid_position": 8,
       "quali_time": null,
       "win_pct": 0.2,
-      "win_pct_stdev": 0.1,
-      "podium_pct": 1.6,
-      "points_pct": 25.4,
-      "expected_position": 13.68,
+      "win_pct_stdev": 0.0,
+      "podium_pct": 1.2,
+      "points_pct": 21.7,
+      "expected_position": 14.26,
       "contributions": {
-        "base_score": 0.5486,
+        "base_score": 0.5231,
         "terms": [
           {
             "key": "quali_pace",
@@ -715,12 +715,12 @@
           {
             "key": "season_form",
             "label": "Season form (championship points)",
-            "value": 0.312
+            "value": 0.2978
           },
           {
             "key": "grid_position",
             "label": "Grid position",
-            "value": 0.0018
+            "value": 0.0043
           },
           {
             "key": "top_speed",
@@ -735,7 +735,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.0138
+            "value": 0.0
           },
           {
             "key": "pit_stops",
@@ -755,7 +755,7 @@
       "win_pct_stdev": 0.1,
       "podium_pct": 1.1,
       "points_pct": 21.3,
-      "expected_position": 14.31,
+      "expected_position": 14.33,
       "contributions": {
         "base_score": 0.5199,
         "terms": [
@@ -799,17 +799,17 @@
     },
     {
       "position": 16,
-      "driver": "SAI",
-      "team": "Williams",
-      "grid_position": 15,
+      "driver": "BEA",
+      "team": "Haas F1 Team",
+      "grid_position": 19,
       "quali_time": null,
       "win_pct": 0.1,
       "win_pct_stdev": 0.0,
-      "podium_pct": 0.7,
-      "points_pct": 15.6,
-      "expected_position": 15.21,
+      "podium_pct": 1.2,
+      "points_pct": 22.1,
+      "expected_position": 14.17,
       "contributions": {
-        "base_score": 0.4784,
+        "base_score": 0.5273,
         "terms": [
           {
             "key": "quali_pace",
@@ -819,12 +819,12 @@
           {
             "key": "season_form",
             "label": "Season form (championship points)",
-            "value": 0.2411
+            "value": 0.2907
           },
           {
             "key": "grid_position",
             "label": "Grid position",
-            "value": 0.0023
+            "value": 0.0018
           },
           {
             "key": "top_speed",
@@ -839,7 +839,7 @@
           {
             "key": "historical_form",
             "label": "Historical form at this circuit",
-            "value": 0.014
+            "value": 0.0138
           },
           {
             "key": "pit_stops",
@@ -851,17 +851,17 @@
     },
     {
       "position": 17,
-      "driver": "BOR",
-      "team": "Audi",
-      "grid_position": 11,
+      "driver": "HIR",
+      "team": "Haas F1 Team",
+      "grid_position": 10,
       "quali_time": null,
       "win_pct": 0.0,
       "win_pct_stdev": 0.0,
       "podium_pct": 0.3,
-      "points_pct": 9.3,
-      "expected_position": 16.57,
+      "points_pct": 8.8,
+      "expected_position": 16.66,
       "contributions": {
-        "base_score": 0.412,
+        "base_score": 0.409,
         "terms": [
           {
             "key": "quali_pace",
@@ -871,64 +871,12 @@
           {
             "key": "season_form",
             "label": "Season form (championship points)",
-            "value": 0.1879
+            "value": 0.1737
           },
           {
             "key": "grid_position",
             "label": "Grid position",
-            "value": 0.0031
-          },
-          {
-            "key": "top_speed",
-            "label": "Top speed",
-            "value": 0.075
-          },
-          {
-            "key": "tire_management",
-            "label": "Tire management",
-            "value": 0.046
-          },
-          {
-            "key": "historical_form",
-            "label": "Historical form at this circuit",
-            "value": 0.0
-          },
-          {
-            "key": "pit_stops",
-            "label": "Pit stops",
-            "value": -0.025
-          }
-        ]
-      }
-    },
-    {
-      "position": 18,
-      "driver": "HIR",
-      "team": "Haas F1 Team",
-      "grid_position": 13,
-      "quali_time": null,
-      "win_pct": 0.0,
-      "win_pct_stdev": 0.0,
-      "podium_pct": 0.1,
-      "points_pct": 5.0,
-      "expected_position": 17.82,
-      "contributions": {
-        "base_score": 0.3444,
-        "terms": [
-          {
-            "key": "quali_pace",
-            "label": "Quali pace",
-            "value": 0.125
-          },
-          {
-            "key": "season_form",
-            "label": "Season form (championship points)",
-            "value": 0.1099
-          },
-          {
-            "key": "grid_position",
-            "label": "Grid position",
-            "value": 0.0026
+            "value": 0.0034
           },
           {
             "key": "top_speed",
@@ -954,18 +902,18 @@
       }
     },
     {
-      "position": 19,
-      "driver": "ALB",
+      "position": 18,
+      "driver": "SAI",
       "team": "Williams",
-      "grid_position": 14,
+      "grid_position": 12,
       "quali_time": null,
       "win_pct": 0.0,
       "win_pct_stdev": 0.0,
-      "podium_pct": 0.2,
-      "points_pct": 6.6,
-      "expected_position": 17.28,
+      "podium_pct": 0.4,
+      "points_pct": 12.2,
+      "expected_position": 15.91,
       "contributions": {
-        "base_score": 0.3741,
+        "base_score": 0.447,
         "terms": [
           {
             "key": "quali_pace",
@@ -975,12 +923,64 @@
           {
             "key": "season_form",
             "label": "Season form (championship points)",
-            "value": 0.1454
+            "value": 0.2092
           },
           {
             "key": "grid_position",
             "label": "Grid position",
-            "value": 0.0025
+            "value": 0.0029
+          },
+          {
+            "key": "top_speed",
+            "label": "Top speed",
+            "value": 0.075
+          },
+          {
+            "key": "tire_management",
+            "label": "Tire management",
+            "value": 0.046
+          },
+          {
+            "key": "historical_form",
+            "label": "Historical form at this circuit",
+            "value": 0.014
+          },
+          {
+            "key": "pit_stops",
+            "label": "Pit stops",
+            "value": -0.025
+          }
+        ]
+      }
+    },
+    {
+      "position": 19,
+      "driver": "ALB",
+      "team": "Williams",
+      "grid_position": 11,
+      "quali_time": null,
+      "win_pct": 0.0,
+      "win_pct_stdev": 0.0,
+      "podium_pct": 0.1,
+      "points_pct": 5.5,
+      "expected_position": 17.66,
+      "contributions": {
+        "base_score": 0.3535,
+        "terms": [
+          {
+            "key": "quali_pace",
+            "label": "Quali pace",
+            "value": 0.125
+          },
+          {
+            "key": "season_form",
+            "label": "Season form (championship points)",
+            "value": 0.1241
+          },
+          {
+            "key": "grid_position",
+            "label": "Grid position",
+            "value": 0.0031
           },
           {
             "key": "top_speed",
@@ -1009,15 +1009,15 @@
       "position": 20,
       "driver": "PER",
       "team": "Cadillac F1 Team",
-      "grid_position": 17,
+      "grid_position": 16,
       "quali_time": null,
       "win_pct": 0.0,
       "win_pct_stdev": 0.0,
       "podium_pct": 0.1,
-      "points_pct": 5.2,
-      "expected_position": 17.74,
+      "points_pct": 3.9,
+      "expected_position": 18.22,
       "contributions": {
-        "base_score": 0.3498,
+        "base_score": 0.3216,
         "terms": [
           {
             "key": "quali_pace",
@@ -1027,12 +1027,12 @@
           {
             "key": "season_form",
             "label": "Season form (championship points)",
-            "value": 0.1099
+            "value": 0.0815
           },
           {
             "key": "grid_position",
             "label": "Grid position",
-            "value": 0.002
+            "value": 0.0021
           },
           {
             "key": "top_speed",
@@ -1066,10 +1066,10 @@
       "win_pct": 0.0,
       "win_pct_stdev": 0.0,
       "podium_pct": 0.1,
-      "points_pct": 5.0,
-      "expected_position": 17.82,
+      "points_pct": 3.7,
+      "expected_position": 18.3,
       "contributions": {
-        "base_score": 0.3448,
+        "base_score": 0.3165,
         "terms": [
           {
             "key": "quali_pace",
@@ -1079,7 +1079,7 @@
           {
             "key": "season_form",
             "label": "Season form (championship points)",
-            "value": 0.1099
+            "value": 0.0815
           },
           {
             "key": "grid_position",
@@ -1118,10 +1118,10 @@
       "win_pct": 0.0,
       "win_pct_stdev": 0.0,
       "podium_pct": 0.1,
-      "points_pct": 4.8,
-      "expected_position": 17.91,
+      "points_pct": 3.5,
+      "expected_position": 18.38,
       "contributions": {
-        "base_score": 0.34,
+        "base_score": 0.3117,
         "terms": [
           {
             "key": "quali_pace",
@@ -1131,7 +1131,7 @@
           {
             "key": "season_form",
             "label": "Season form (championship points)",
-            "value": 0.1099
+            "value": 0.0815
           },
           {
             "key": "grid_position",
