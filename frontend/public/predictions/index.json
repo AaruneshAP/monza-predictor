@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "updated_at": "2026-11-01T19:24:02.314306+00:00",
+  "updated_at": "2026-11-02T10:33:38.870745+00:00",
   "races": [
     {
       "round": 1,
@@ -133,14 +133,14 @@
       "slug": "2026-r19-mexico-city-grand-prix",
       "race_name": "Mexico City Grand Prix",
       "race_date": "2026-11-01",
-      "status": "predicted"
+      "status": "completed"
     },
     {
       "round": 20,
       "slug": "2026-r20-s-o-paulo-grand-prix",
       "race_name": "S\u00e3o Paulo Grand Prix",
       "race_date": "2026-11-08",
-      "status": "not_predicted"
+      "status": "predicted"
     },
     {
       "round": 21,
@@ -164,36 +164,36 @@
       "status": "not_predicted"
     }
   ],
-  "next_race_slug": "2026-r19-mexico-city-grand-prix",
+  "next_race_slug": "2026-r20-s-o-paulo-grand-prix",
   "track_record": {
-    "races_scored": 9,
-    "winner_hit_rate_pct": 44.4,
-    "avg_brier_score_win": 0.0343,
-    "avg_mean_abs_position_error": 3.16,
-    "avg_podium_hits": 1.89,
-    "avg_baseline_brier_score_win": 0.0212
+    "races_scored": 10,
+    "winner_hit_rate_pct": 40.0,
+    "avg_brier_score_win": 0.0346,
+    "avg_mean_abs_position_error": 3.11,
+    "avg_podium_hits": 1.9,
+    "avg_baseline_brier_score_win": 0.0282
   },
   "calibration_bins": [
     {
       "bin_start": 0,
       "bin_end": 10,
-      "n": 163,
+      "n": 180,
       "avg_predicted_win_pct": 1.6,
       "actual_win_rate_pct": 0.6
     },
     {
       "bin_start": 10,
       "bin_end": 20,
-      "n": 21,
-      "avg_predicted_win_pct": 14.5,
-      "actual_win_rate_pct": 9.5
+      "n": 25,
+      "avg_predicted_win_pct": 14.6,
+      "actual_win_rate_pct": 12.0
     },
     {
       "bin_start": 20,
       "bin_end": 30,
-      "n": 8,
-      "avg_predicted_win_pct": 23.4,
-      "actual_win_rate_pct": 50.0
+      "n": 9,
+      "avg_predicted_win_pct": 23.7,
+      "actual_win_rate_pct": 44.4
     },
     {
       "bin_start": 30,
