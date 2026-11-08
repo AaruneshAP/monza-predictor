@@ -397,13 +397,37 @@ available, falling back to quali `Position` when it isn't yet (e.g.
 called right after quali, before penalties are finalized).
 
 **A driver leaked into the predictions JSON as the literal string
-`"nan"`.** FastF1's F1-API driver info occasionally returns a blank `Tla`
-(abbreviation) for one entrant while the rest of that row (team, quali
-position) loads fine — confirmed live for a Haas entry. Nothing filtered
-that row before it flowed into `predicted` with `driver: "nan"`
-(`str(np.nan)`), a real driver-identity bug in the output a frontend
-can't sensibly render. Fixed by dropping any `_live_quali_features()` row
-with a missing abbreviation, with a loud warning naming the team so the
-gap is diagnosable rather than silent — the complementary case (a driver
-entirely absent from live quali) already had this same loud-not-silent
-treatment from an earlier fix; this one just closes the other half.
+`"nan"`.** FastF1's F1-API driver info occasionally returns a missing
+`Tla` (abbreviation) for one entrant while the rest of that row (team,
+quali position) loads fine — confirmed live for a Haas entry. Nothing
+filtered that row before it flowed into `predicted` with `driver: "nan"`,
+a real driver-identity bug in the output a frontend can't sensibly
+render.
+
+First fix dropped any row where `.isna()` was true — and on the very
+next real run, the exact same entrant leaked through again, completely
+unfiltered, no warning printed. The premise was wrong: the committed
+JSON showed `"driver": "nan"` as a *quoted string* — a true float NaN
+serializes to a bare, unquoted `NaN` token via `json.dumps`, not a
+quoted one, so the underlying value was never pandas-missing at all, it
+was the actual three-character string `"nan"` (and `.isna()` correctly
+has nothing to say about a perfectly valid string value). Re-fixed to
+also treat the literal strings `"nan"`/`"none"`/`""` (case-insensitive)
+as invalid alongside true NaN, which finally caught it. The repeated
+lesson from this same log (#14): don't assume the shape a missing-data
+signal takes — verify what the value actually *is*, not what you'd
+expect it to be.
+
+Separately, and not fixed by any code change: the grid-penalty override
+and rain-probability floor above are both implemented correctly but
+came back inert on the first real dispatch after merging — the GitHub
+Actions runner has no F1 account credentials (`F1_USERNAME`/
+`F1_PASSWORD`), and FastF1's live weather, track-status, and pre-race
+Race-session `GridPosition` data all require that sign-in; every one of
+those categories logged "Failed to authenticate with Formula 1 account"
+and came back empty, while `session.results` (quali classification +
+entry list) loaded fine from a different, non-live-timing source. Both
+features fall back exactly as designed (historical rain rate, quali
+classification) when that happens — this isn't a bug to fix further
+without either those credentials or FastF1's feed/FIA's grid publication
+becoming available closer to the race.

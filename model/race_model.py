@@ -395,24 +395,33 @@ def _live_quali_features(session) -> pd.DataFrame:
     df = session.results[["Abbreviation", "Position", "TeamName", "Q1", "Q2", "Q3"]].rename(
         columns={"Abbreviation": "driver", "Position": "grid_pos", "TeamName": "team"}
     )
-    # FastF1's F1-API driver info occasionally comes back with a blank "Tla"
-    # (abbreviation) for one entrant even though the rest of their row (team,
-    # position) loaded fine — confirmed live: a Haas entry with team/grid
-    # intact but driver == NaN, which then flowed all the way into the
-    # predictions JSON as the literal string "nan". Drop it loudly rather
-    # than silently emitting a driver code that isn't one; this does mean
-    # that entrant is missing from this prediction run until FastF1's feed
-    # fills in their code (the existing "missing" warning further down in
-    # build_features() covers the complementary case of a driver absent
-    # from live_quali entirely).
-    unnamed = df[df["driver"].isna()]
+    # FastF1's F1-API driver info occasionally comes back with a missing
+    # "Tla" (abbreviation) for one entrant even though the rest of their
+    # row (team, position) loaded fine — confirmed live: a Haas entry with
+    # team/grid intact but no usable driver code. The first fix here only
+    # checked .isna(), which assumes a missing value arrives as an actual
+    # pandas/numpy NaN — but the real one observed live was the literal
+    # three-character string "nan" (confirmed via the committed JSON:
+    # `"driver": "nan"` as a quoted string, which only happens if the
+    # Python value already *was* that string before json.dumps ever saw
+    # it — a true float NaN serializes as a bare, unquoted `NaN` token
+    # instead). .isna() doesn't match a real string, so that row sailed
+    # straight through unfiltered on the next run too. Catches both forms
+    # now. Dropped loudly rather than silently emitting a driver code that
+    # isn't one; this does mean that entrant is missing from this
+    # prediction run until FastF1's feed fills in their code (the existing
+    # "missing" warning further down in build_features() covers the
+    # complementary case of a driver absent from live_quali entirely).
+    driver_str = df["driver"].astype(str).str.strip().str.lower()
+    invalid_driver = df["driver"].isna() | driver_str.isin(["nan", "none", ""])
+    unnamed = df[invalid_driver]
     if not unnamed.empty:
         print(
-            f"  [live quali] WARNING: {len(unnamed)} entrant(s) loaded with no driver "
+            f"  [live quali] WARNING: {len(unnamed)} entrant(s) loaded with no usable driver "
             f"abbreviation (team(s): {unnamed['team'].tolist()}) — dropped from this "
             f"prediction rather than emitting a 'nan' driver code."
         )
-        df = df[df["driver"].notna()]
+        df = df[~invalid_driver]
     # The time that actually set a driver's grid slot: their personal best
     # in the LAST segment they took part in — Q3 for anyone who reached it,
     # else Q2, else Q1 for someone eliminated in Q1. FastF1 leaves the
