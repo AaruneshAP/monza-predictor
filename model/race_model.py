@@ -355,19 +355,23 @@ def _load_current_grid(latest_round: int, round_number: int) -> pd.DataFrame:
     return grid.reset_index(drop=True)
 
 
-def _load_live_session(event_name: str, session_type: str):
-    """Attempts to load this year's actual session (e.g. 'Q', 'FP2') for
-    the given event.
+def _load_live_session(event_name: str, session_type: str, laps: bool = True, weather: bool = False):
+    """Attempts to load this year's actual session (e.g. 'Q', 'FP2', 'R')
+    for the given event.
 
     FastF1 does not raise when a session hasn't happened yet — it silently
     returns empty results/laps tables — so "not available" is detected by
     checking for empty data, not by catching an exception. Returns the
     loaded Session if real data exists, otherwise None. This is what lets a
     later re-run during race week upgrade to live data automatically.
+
+    `laps`/`weather` default to what quali/FP2 callers need; a caller that
+    only wants session.results (e.g. the Race session's pre-race starting
+    grid, see _live_grid_positions()) can skip the heavier laps feed.
     """
     try:
         session = fastf1.get_session(SEASON_YEAR, event_name, session_type)
-        session.load(laps=True, telemetry=False, weather=False, messages=False)
+        session.load(laps=laps, telemetry=False, weather=weather, messages=False)
     except Exception as exc:
         print(f"  [live weekend] {session_type} not available yet: {exc}")
         return None
@@ -391,6 +395,24 @@ def _live_quali_features(session) -> pd.DataFrame:
     df = session.results[["Abbreviation", "Position", "TeamName", "Q1", "Q2", "Q3"]].rename(
         columns={"Abbreviation": "driver", "Position": "grid_pos", "TeamName": "team"}
     )
+    # FastF1's F1-API driver info occasionally comes back with a blank "Tla"
+    # (abbreviation) for one entrant even though the rest of their row (team,
+    # position) loaded fine — confirmed live: a Haas entry with team/grid
+    # intact but driver == NaN, which then flowed all the way into the
+    # predictions JSON as the literal string "nan". Drop it loudly rather
+    # than silently emitting a driver code that isn't one; this does mean
+    # that entrant is missing from this prediction run until FastF1's feed
+    # fills in their code (the existing "missing" warning further down in
+    # build_features() covers the complementary case of a driver absent
+    # from live_quali entirely).
+    unnamed = df[df["driver"].isna()]
+    if not unnamed.empty:
+        print(
+            f"  [live quali] WARNING: {len(unnamed)} entrant(s) loaded with no driver "
+            f"abbreviation (team(s): {unnamed['team'].tolist()}) — dropped from this "
+            f"prediction rather than emitting a 'nan' driver code."
+        )
+        df = df[df["driver"].notna()]
     # The time that actually set a driver's grid slot: their personal best
     # in the LAST segment they took part in — Q3 for anyone who reached it,
     # else Q2, else Q1 for someone eliminated in Q1. FastF1 leaves the
@@ -405,6 +427,27 @@ def _live_quali_features(session) -> pd.DataFrame:
     except Exception:
         df["top_speed"] = np.nan
     return df
+
+
+def _live_grid_positions(session) -> pd.Series:
+    """The actual starting grid, per driver, from the Race session's own
+    `GridPosition` column — distinct from qualifying's `Position`
+    (classification in the quali session itself). The two differ whenever
+    grid penalties apply (confirmed live: a driver qualifying mid-pack but
+    starting from the back after a gearbox/power-unit penalty) — FastF1's
+    GridPosition reflects the post-penalty official starting grid once
+    FIA has published it, typically published same raceday, well before
+    _live_quali_features()'s own Position would ever change.
+
+    Returns an empty Series if GridPosition isn't available yet (e.g. this
+    is called right after quali, before penalties are finalized) — the
+    caller falls back to quali classification in that case.
+    """
+    if "GridPosition" not in session.results.columns:
+        return pd.Series(dtype=float)
+    grid = session.results[["Abbreviation", "GridPosition"]].rename(columns={"Abbreviation": "driver"})
+    grid = grid.dropna(subset=["driver", "GridPosition"])
+    return grid.set_index("driver")["GridPosition"]
 
 
 def _live_practice_tire_deg(session) -> pd.Series:
@@ -446,6 +489,15 @@ def _live_practice_tire_deg(session) -> pd.Series:
     if not rows:
         return pd.Series(dtype=float)
     return pd.DataFrame(rows).groupby("driver")["slope"].mean()
+
+
+# Floor applied to rain_probability (see load_race_context()) when this
+# race weekend's own quali/FP2 sessions have already recorded rainfall —
+# real same-weekend evidence outweighing a historical base rate computed
+# from other years. Not a forecast (this project has no weather forecast
+# API, so it can't know whether rain continues into the race), just a
+# deliberately high floor reflecting that it's already been a wet weekend.
+WET_WEEKEND_RAIN_PROBABILITY = 0.75
 
 
 def _historical_rain_probability(historical_key: str | None) -> float:
@@ -551,15 +603,21 @@ def load_race_context(round_number: int, cache_dir: str = "./fastf1_cache", back
     print(f"Loading season form for rounds {form_rounds}...")
     season = _load_season_form(form_rounds)
 
+    weekend_rain_observed = False
     if backtest:
         print("  Backtest mode: skipping live quali/FP2 (blind pre-race prediction).")
         live_quali, live_tire_deg = None, None
     else:
         print(f"Checking for live {event_name} session data (Q/FP2)...")
-        live_quali_session = _load_live_session(event_name, "Q")
+        live_quali_session = _load_live_session(event_name, "Q", weather=True)
         live_quali = _live_quali_features(live_quali_session) if live_quali_session is not None else None
+        if live_quali_session is not None:
+            weekend_rain_observed = (
+                live_quali_session.weather_data is not None
+                and live_quali_session.weather_data["Rainfall"].any()
+            )
 
-        live_practice_session = _load_live_session(event_name, "FP2")
+        live_practice_session = _load_live_session(event_name, "FP2", weather=True)
         live_tire_deg = (
             _live_practice_tire_deg(live_practice_session)
             if live_practice_session is not None
@@ -567,6 +625,28 @@ def load_race_context(round_number: int, cache_dir: str = "./fastf1_cache", back
         )
         if live_tire_deg is not None and live_tire_deg.empty:
             live_tire_deg = None
+        if live_practice_session is not None and live_practice_session.weather_data is not None:
+            weekend_rain_observed = weekend_rain_observed or live_practice_session.weather_data["Rainfall"].any()
+
+        if live_quali is not None:
+            print(f"Checking for the official starting grid ({event_name} grid penalties)...")
+            live_race_session = _load_live_session(event_name, "R", laps=False)
+            grid_overrides = (
+                _live_grid_positions(live_race_session) if live_race_session is not None else pd.Series(dtype=float)
+            )
+            if not grid_overrides.empty:
+                # Grid penalties move a driver's actual starting slot below
+                # their quali classification (confirmed live: a driver
+                # qualifying mid-pack but starting from the back after a
+                # power-unit penalty) — live_quali's own grid_pos is pure
+                # quali classification and has no way to know about
+                # penalties applied afterward, so override per-driver
+                # wherever FIA's official grid has actually been published.
+                official_grid = live_quali["driver"].map(grid_overrides)
+                n_changed = int(((official_grid.notna()) & (official_grid != live_quali["grid_pos"])).sum())
+                if n_changed:
+                    print(f"  [grid penalties] {n_changed} driver(s) starting grid differs from quali classification.")
+                live_quali["grid_pos"] = official_grid.fillna(live_quali["grid_pos"])
 
     grid_source = "live_qualifying" if live_quali is not None else "season_form_projection"
     tire_deg_source = "live_fp2" if live_tire_deg is not None else "season_form"
@@ -575,6 +655,20 @@ def load_race_context(round_number: int, cache_dir: str = "./fastf1_cache", back
 
     print(f"Estimating rain probability from {event_name} weather history...")
     rain_probability = _historical_rain_probability(profile["historical_key"])
+    if weekend_rain_observed:
+        # The historical base rate is a prior over "an average year at this
+        # circuit" and has no way to reflect what's actually happening this
+        # specific race weekend — confirmed live: Interlagos quali run in
+        # heavy rain while its historical base rate (drier recent years
+        # weighted in) still came out near 0%. This project has no weather
+        # forecast API, so it can't predict whether rain continues into the
+        # race, but real rain already recorded in this weekend's own
+        # sessions is the strongest same-weekend signal available — treated
+        # as a floor on the probability rather than a fixed override, so a
+        # circuit whose historical rate is already higher than this isn't
+        # pulled down by it.
+        rain_probability = max(rain_probability, WET_WEEKEND_RAIN_PROBABILITY)
+        print(f"  [weather] Rain observed in this weekend's own sessions — rain_probability floored at {WET_WEEKEND_RAIN_PROBABILITY:.0%}.")
 
     print(f"Estimating safety car probability from {event_name} track-status history...")
     safety_car_probability = _historical_safety_car_probability(profile["historical_key"])

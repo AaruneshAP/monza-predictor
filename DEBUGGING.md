@@ -361,3 +361,49 @@ Neither fix has been confirmed against the live API yet as of writing
 this entry — both are reasoned from the exact, consistent failure pattern
 in the previous real dispatch, not verified success. The next real
 `telemetry` dispatch is what actually confirms or refutes them.
+
+### 16. Three real-weekend data bugs: rain probability, grid penalties, a leaked "nan" driver
+
+Caught live during the São Paulo GP weekend (heavy rain through qualifying),
+all three in the same `load_race_context()` path:
+
+**Rain probability showed 0%** despite qualifying running in genuinely
+heavy rain. `rain_probability` was computed purely from
+`_historical_rain_probability()` — a base rate over *other years'* races
+at the circuit — with no path for "what's actually happening this
+specific weekend" to feed in at all. A circuit whose recent historical
+years happened to be dry will show a low number no matter how wet the
+live weekend is, because the two signals were never connected. Fixed by
+loading weather data for the live Q/FP2 sessions (previously
+`weather=False`, since nothing used it) and flooring `rain_probability`
+at `WET_WEEKEND_RAIN_PROBABILITY` (0.75) whenever either session recorded
+real rainfall. Explicitly a floor, not a forecast — this project has no
+weather forecast API, so it has no way to know whether rain continues
+into the race; it only knows the weekend has already been wet, which is
+still far better evidence than an other-years base rate.
+
+**Starting grid was wrong for drivers carrying grid penalties.**
+`_live_quali_features()`'s `grid_pos` came straight from the qualifying
+session's own `Position` column — pure quali classification, with no
+concept of a post-session grid penalty (gearbox, power unit, etc.)
+dropping a driver several places for the actual race start. The two are
+the same number most weekends, which is exactly why this went unnoticed
+until a weekend where they weren't. Fixed by loading the Race session
+separately (`_live_grid_positions()`, `laps=False` since only
+`session.results` is needed) and reading its `GridPosition` column —
+FastF1's own post-penalty official starting grid, populated once FIA
+publishes it — overriding quali classification per-driver wherever it's
+available, falling back to quali `Position` when it isn't yet (e.g.
+called right after quali, before penalties are finalized).
+
+**A driver leaked into the predictions JSON as the literal string
+`"nan"`.** FastF1's F1-API driver info occasionally returns a blank `Tla`
+(abbreviation) for one entrant while the rest of that row (team, quali
+position) loads fine — confirmed live for a Haas entry. Nothing filtered
+that row before it flowed into `predicted` with `driver: "nan"`
+(`str(np.nan)`), a real driver-identity bug in the output a frontend
+can't sensibly render. Fixed by dropping any `_live_quali_features()` row
+with a missing abbreviation, with a loud warning naming the team so the
+gap is diagnosable rather than silent — the complementary case (a driver
+entirely absent from live quali) already had this same loud-not-silent
+treatment from an earlier fix; this one just closes the other half.
