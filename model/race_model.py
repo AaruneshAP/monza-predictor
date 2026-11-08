@@ -491,6 +491,26 @@ def _live_practice_tire_deg(session) -> pd.Series:
     return pd.DataFrame(rows).groupby("driver")["slope"].mean()
 
 
+def _session_recorded_rain(session) -> bool:
+    """Whether this session's own weather feed recorded any rainfall.
+
+    _load_live_session() only confirms session.results loaded — that comes
+    from a separate, more reliable path (F1 API / Ergast) than weather_data,
+    which depends on the live-timing feed and can fail independently (same
+    category of partial-data gap _live_practice_tire_deg() already guards
+    against for session.laps: confirmed live, session.weather_data raises
+    DataNotLoadedError rather than returning None when the live-timing feed
+    that session needs is down, even though session.results loaded fine).
+    Treated the same way: no weather data this run just means no same-
+    weekend rain signal, not a crash.
+    """
+    try:
+        weather = session.weather_data
+    except Exception:
+        return False
+    return weather is not None and not weather.empty and bool(weather["Rainfall"].any())
+
+
 # Floor applied to rain_probability (see load_race_context()) when this
 # race weekend's own quali/FP2 sessions have already recorded rainfall —
 # real same-weekend evidence outweighing a historical base rate computed
@@ -612,10 +632,7 @@ def load_race_context(round_number: int, cache_dir: str = "./fastf1_cache", back
         live_quali_session = _load_live_session(event_name, "Q", weather=True)
         live_quali = _live_quali_features(live_quali_session) if live_quali_session is not None else None
         if live_quali_session is not None:
-            weekend_rain_observed = (
-                live_quali_session.weather_data is not None
-                and live_quali_session.weather_data["Rainfall"].any()
-            )
+            weekend_rain_observed = _session_recorded_rain(live_quali_session)
 
         live_practice_session = _load_live_session(event_name, "FP2", weather=True)
         live_tire_deg = (
@@ -625,8 +642,8 @@ def load_race_context(round_number: int, cache_dir: str = "./fastf1_cache", back
         )
         if live_tire_deg is not None and live_tire_deg.empty:
             live_tire_deg = None
-        if live_practice_session is not None and live_practice_session.weather_data is not None:
-            weekend_rain_observed = weekend_rain_observed or live_practice_session.weather_data["Rainfall"].any()
+        if live_practice_session is not None:
+            weekend_rain_observed = weekend_rain_observed or _session_recorded_rain(live_practice_session)
 
         if live_quali is not None:
             print(f"Checking for the official starting grid ({event_name} grid penalties)...")
